@@ -4,7 +4,7 @@
 
 buffered_reader::buffered_reader() : buffer(new unsigned char[BUFF_LEN]), input() {}
 
-buffered_reader::buffered_reader(const char* filename) : buffer(new unsigned char[BUFF_LEN]) {
+buffered_reader::buffered_reader(const char* filename) : buffer(new unsigned char[BUFF_LEN]), file_opened(true) {
     input.open(filename, std::ios::binary);
     if (!input.is_open()) {
         throw "error while trying to open file";
@@ -17,6 +17,9 @@ buffered_reader::~buffered_reader() {
 }
 
 void buffered_reader::open(const char* filename) {
+    if (file_opened) {
+        input.close();
+    }
     input.open(filename, std::ios::binary);
     if (!input.is_open()) {
         throw "error while trying to open file";
@@ -24,6 +27,9 @@ void buffered_reader::open(const char* filename) {
 }
 
 void buffered_reader::close() {
+    if (!file_opened) {
+        return;
+    }
     input.close();
 }
 
@@ -34,6 +40,9 @@ void buffered_reader::reset() {
 }
 
 void buffered_reader::check_buffer() {
+    if (!file_opened) {
+        throw("file not opened");
+    }
     if (pos != end_pos) {
         return;
     }

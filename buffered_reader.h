@@ -30,6 +30,7 @@ private:
     size_t pos = 0, end_pos = 0, bit_pos = 8;
     unsigned char* buffer;
     std::ifstream input;
+    bool file_opened = false;
 
     void check_buffer();
     int64_t read_int(size_t);

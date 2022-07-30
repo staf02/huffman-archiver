@@ -12,13 +12,13 @@
 #include <ctime>
 
 int main() {
-    encoder e("7.jpg");
+    encoder e("12.jpg");
     e.encode();
     std::cout << "Successfuly encoded\n";
     e.save_to_file("sample.jzip");
     decoder dec("sample.jzip");
     double t = clock();
-    dec.save_to_file("out7.jpg");
+    dec.save_to_file("out12.jpg");
     double t1 = clock();
     std::cout << t1 - t;
     return 0;

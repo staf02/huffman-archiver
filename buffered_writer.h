@@ -30,6 +30,6 @@ private:
     unsigned char byte = 0;
     unsigned char* buffer;
     std::ofstream out;
-
+    bool file_opened = false;
     void write_buffer();
 };

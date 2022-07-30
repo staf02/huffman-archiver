@@ -2,7 +2,7 @@
 
 buffered_writer::buffered_writer() : buffer(new unsigned char[BUFF_LEN]), out() {};
 
-buffered_writer::buffered_writer(const char* filename) : buffer(new unsigned char[BUFF_LEN]), out(filename, std::ios::binary) {};
+buffered_writer::buffered_writer(const char* filename) : file_opened(true), buffer(new unsigned char[BUFF_LEN]), out(filename, std::ios::binary) {};
 
 buffered_writer::~buffered_writer() {
     close();
@@ -10,10 +10,17 @@ buffered_writer::~buffered_writer() {
 }
 
 void buffered_writer::open(const char* filename) {
+    if (file_opened) {
+        out.close();
+    }
     out.open(filename);
+    file_opened = false;
 }
 
 void buffered_writer::close() {
+    if (!file_opened) {
+        return;
+    }
     if (bit_pos != 0) {
         write(byte << (8 - bit_pos));
     }
