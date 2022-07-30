@@ -2,9 +2,9 @@
 #include <algorithm>
 #include <bitset>
 
-buffered_reader::buffered_reader() : buffer(new unsigned char[BUFF_LEN]), pos(0), end_pos(0), bit_pos(8), input() {}
+buffered_reader::buffered_reader() : buffer(new unsigned char[BUFF_LEN]), input() {}
 
-buffered_reader::buffered_reader(const char* filename) : buffer(new unsigned char[BUFF_LEN]), pos(0), end_pos(0), bit_pos(8) {
+buffered_reader::buffered_reader(const char* filename) : buffer(new unsigned char[BUFF_LEN]) {
     input.open(filename, std::ios::binary);
     if (!input.is_open()) {
         throw "error while trying to open file";

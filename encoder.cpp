@@ -3,6 +3,7 @@
 #include <utility>
 #include <memory>
 #include <iostream>
+#include "buffered_writer.h"
 
 encoder::encoder() : source(), tree_root(nullptr), freq() {}
 
@@ -18,24 +19,24 @@ void encoder::encode() {
     build_tree();
 }
 
-void print_code(std::ofstream& out, std::vector<bool>& code) {
+void print_code(buffered_writer& out, std::vector<bool>& code) {
     for (int j = 0; j < code.size(); ++j) {
         if (code[j]) {
-            out << 1;
+            out.write('1');
         }
         else {
-            out << 0;
+            out.write('0');
         }
     }
 }
 
 void encoder::save_to_file(const char* filename) {
-    std::ofstream out(filename, std::ios::binary);
+    buffered_writer out(filename);
     std::vector<bool> code;
     std::vector<std::vector<bool>> codes(256);
     gen_code(tree_root, codes, code);
     print_codes(out, codes);
-    out << "\n";
+    out.write('\n');
     print_text(out, codes);
     out.close();
 }
@@ -84,18 +85,19 @@ void encoder::gen_code(node* t, std::vector<std::vector<bool>>& codes, std::vect
     code.pop_back();
 }
 
-void encoder::print_codes(std::ofstream& out, std::vector<std::vector<bool>>& codes) {
+void encoder::print_codes(buffered_writer& out, std::vector<std::vector<bool>>& codes) {
     for (size_t i = 0; i < 256; ++i) {
         if (codes[i].size() == 0)
             continue;
         unsigned char c = i;
         print_code(out, codes[i]);
-        out << " " << c;
-        out << "\n";
+        out.write(' ');
+        out.write(c);
+        out.write('\n');
     }
 }
 
-void encoder::print_text(std::ofstream& out, std::vector<std::vector<bool>>& codes) {
+void encoder::print_text(buffered_writer& out, std::vector<std::vector<bool>>& codes) {
     source.reset();
     unsigned char c;
     while (source.get_next(c)) {

@@ -5,7 +5,7 @@
 class buffered_reader {
 public:
     buffered_reader();
-    buffered_reader(const char* filename);
+    buffered_reader(const char*);
     buffered_reader(buffered_reader &other) = delete;
     buffered_reader& operator=(buffered_reader& r) = delete;
     ~buffered_reader();
@@ -26,8 +26,8 @@ public:
     uint64_t read_uint64t();
 
 private:
-    size_t const BUFF_LEN = 4;
-    size_t pos, end_pos, bit_pos;
+    size_t const BUFF_LEN = 1024;
+    size_t pos = 0, end_pos = 0, bit_pos = 8;
     unsigned char* buffer;
     std::ifstream input;
 

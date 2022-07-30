@@ -3,6 +3,7 @@
 #include "fstream"
 #include "huffman_tree.h"
 #include <array>
+#include "buffered_writer.h"
 
 class encoder {
 public:
@@ -21,6 +22,6 @@ private:
     void count_freq();
     void build_tree();
     void gen_code(node* t, std::vector<std::vector<bool>> &, std::vector<bool>&);
-    void print_codes(std::ofstream &out, std::vector<std::vector<bool>>&);
-    void print_text(std::ofstream &out, std::vector<std::vector<bool>>&);
+    void print_codes(buffered_writer &out, std::vector<std::vector<bool>>&);
+    void print_text(buffered_writer &out, std::vector<std::vector<bool>>&);
 };

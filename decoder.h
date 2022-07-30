@@ -2,6 +2,7 @@
 #include "huffman_tree.h"
 #include <unordered_map>
 #include "buffered_reader.h"
+#include "buffered_writer.h"
 
 class decoder {
 public:
@@ -13,5 +14,5 @@ private:
     std::unordered_map<std::string, unsigned char> dict;
 
     void build_tree();
-    void decode_data(std::ofstream &out);
+    void decode_data(buffered_writer &out);
 };

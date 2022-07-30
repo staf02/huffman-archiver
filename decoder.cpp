@@ -1,12 +1,13 @@
 #include "decoder.h"
+#include "buffered_writer.h"
 
 decoder::decoder(const char* filename) : source(filename) {};
 
 void decoder::save_to_file(const char* filename) {
     build_tree();   
-    std::ofstream out(filename, std::ios::binary);
+    buffered_writer out(filename);
     decode_data(out);
-    out.close();
+    //out.close();
 }
 
 void decoder::build_tree() {
@@ -33,13 +34,13 @@ void decoder::build_tree() {
     }
 }
 
-void decoder::decode_data(std::ofstream& out) {
+void decoder::decode_data(buffered_writer& out) {
     std::string tmp = "";
     unsigned char c;
     while (source.get_next(c)) {
         tmp += c;
         if (dict.find(tmp) != dict.end()) {
-            out << dict[tmp];
+            out.write(dict[tmp]);
             tmp = "";
         }
     }
