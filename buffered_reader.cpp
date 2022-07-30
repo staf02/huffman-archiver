@@ -24,12 +24,14 @@ void buffered_reader::open(const char* filename) {
     if (!input.is_open()) {
         throw "error while trying to open file";
     }
+    file_opened = true;
 }
 
 void buffered_reader::close() {
     if (!file_opened) {
         return;
     }
+    file_opened = false;
     input.close();
 }
 

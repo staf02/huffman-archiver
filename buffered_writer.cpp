@@ -14,7 +14,7 @@ void buffered_writer::open(const char* filename) {
         out.close();
     }
     out.open(filename);
-    file_opened = false;
+    file_opened = true;
 }
 
 void buffered_writer::close() {
@@ -27,6 +27,7 @@ void buffered_writer::close() {
     if (pos != 0) {
         out.write((char*)buffer, pos);
     }
+    file_opened = false;
     out.close();
 }
 
