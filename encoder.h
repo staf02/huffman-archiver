@@ -11,7 +11,7 @@ public:
     ~encoder() = default;
     void open(const char*);
     void encode();
-    void save_to_file(std::ofstream &out);
+    void save_to_file(const char*);
 
 private:
     node* tree_root;

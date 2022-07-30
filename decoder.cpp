@@ -12,8 +12,8 @@ void decoder::save_to_file(const char* filename) {
 void decoder::build_tree() {
     std::string tmp = "";
     bool is_symbol = false;
-    while (!source.eof()) {
-        unsigned char c = source.get_next();
+    unsigned char c;
+    while (source.get_next(c)) {
         if (c == '\n' && tmp.empty()) {
             break;
         }
@@ -21,7 +21,8 @@ void decoder::build_tree() {
             is_symbol = true;
         }
         else if (is_symbol) {
-            source.get_next();
+            unsigned char t;
+            source.get_next(t);
             dict[tmp] = c;
             tmp = "";
             is_symbol = false;
@@ -34,8 +35,9 @@ void decoder::build_tree() {
 
 void decoder::decode_data(std::ofstream& out) {
     std::string tmp = "";
-    while (!source.eof()) {
-        tmp += source.get_next();
+    unsigned char c;
+    while (source.get_next(c)) {
+        tmp += c;
         if (dict.find(tmp) != dict.end()) {
             out << dict[tmp];
             tmp = "";

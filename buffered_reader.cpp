@@ -56,22 +56,10 @@ bool buffered_reader::has_next() {
 
 bool buffered_reader::get_next(unsigned char& c){
     if (has_next()) {
-        c = get_next();
+        c = buffer[pos++];
         return true;
     }
     return false;
-}
-
-bool buffered_reader::eof() {
-    return pos == end_pos && input.eof();
-}
-
-unsigned char buffered_reader::get_next() {
-    check_buffer();
-    if (pos == end_pos) {
-        throw std::runtime_error("end of file reached");
-    }
-    return buffer[pos++];
 }
 
 unsigned char* buffered_reader::read_char_array(size_t len) {
@@ -84,14 +72,6 @@ unsigned char* buffered_reader::read_char_array(size_t len) {
         get_next(res[i]);
     }
     return res;
-}
-
-int8_t buffered_reader::read_int8t() {
-    return get_next();
-}
-
-uint8_t buffered_reader::read_uint8t() {
-    return get_next();
 }
 
 int16_t buffered_reader::read_int16t() {

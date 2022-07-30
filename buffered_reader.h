@@ -16,12 +16,8 @@ public:
 
     bool has_next();
     bool get_next(unsigned char& c);
-    bool eof();
 
     unsigned char* read_char_array(size_t len);
-    unsigned char get_next();
-    int8_t read_int8t();
-    uint8_t read_uint8t();
     int16_t read_int16t();
     uint16_t read_uint16t();
     int32_t read_int32t();

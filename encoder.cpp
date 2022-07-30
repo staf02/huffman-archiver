@@ -29,18 +29,21 @@ void print_code(std::ofstream& out, std::vector<bool>& code) {
     }
 }
 
-void encoder::save_to_file(std::ofstream& out) {
+void encoder::save_to_file(const char* filename) {
+    std::ofstream out(filename, std::ios::binary);
     std::vector<bool> code;
     std::vector<std::vector<bool>> codes(256);
     gen_code(tree_root, codes, code);
     print_codes(out, codes);
     out << "\n";
     print_text(out, codes);
+    out.close();
 }
 
 void encoder::count_freq() {
-    while (!source.eof()) {
-        ++freq[source.get_next()];
+    unsigned char c;
+    while (source.get_next(c)) {
+        ++freq[c];
     }
 }
 
@@ -94,8 +97,8 @@ void encoder::print_codes(std::ofstream& out, std::vector<std::vector<bool>>& co
 
 void encoder::print_text(std::ofstream& out, std::vector<std::vector<bool>>& codes) {
     source.reset();
-    while (!source.eof()) {
-        unsigned char c = source.get_next();
+    unsigned char c;
+    while (source.get_next(c)) {
         print_code(out, codes[c]);
     }
 }

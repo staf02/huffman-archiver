@@ -9,12 +9,11 @@
 #include "decoder.h"
 
 int main() {
-    /*encoder e("calc1.exe");
+    encoder e("12.jpg");
     e.encode();
     std::cout << "Successfuly encoded\n";
-    std::ofstream out("sample.jzip", std::ios::binary);
-    e.save_to_file(out);*/
+    e.save_to_file("sample.jzip");
     decoder dec("sample.jzip");
-    dec.save_to_file("NEW_calc.exe");
+    dec.save_to_file("NEW_12.jpg");
     return 0;
 }
