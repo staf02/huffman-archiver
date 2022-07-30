@@ -1,9 +1,10 @@
 #include "buffered_reader.h"
 #include <algorithm>
+#include <bitset>
 
-buffered_reader::buffered_reader() : buffer(new unsigned char[BUFF_LEN]), pos(0), end_pos(0), input() {}
+buffered_reader::buffered_reader() : buffer(new unsigned char[BUFF_LEN]), pos(0), end_pos(0), bit_pos(8), input() {}
 
-buffered_reader::buffered_reader(const char* filename) : buffer(new unsigned char[BUFF_LEN]), pos(0), end_pos(0) {
+buffered_reader::buffered_reader(const char* filename) : buffer(new unsigned char[BUFF_LEN]), pos(0), end_pos(0), bit_pos(8) {
     input.open(filename, std::ios::binary);
     if (!input.is_open()) {
         throw "error while trying to open file";
@@ -60,6 +61,23 @@ bool buffered_reader::get_next(unsigned char& c){
         return true;
     }
     return false;
+}
+
+bool buffered_reader::read_bit(bool& bit) {
+    unsigned char c;
+    if (bit_pos == 8) {
+        if (!get_next(c)) {
+            return false;
+        }
+        bit_pos = 0;
+    } 
+    else {
+        c = buffer[pos - 1]; //pos == 0 <=> end_pos == 0 <=> !has_next()
+    }
+    bit = c & (1 << (7 - bit_pos));
+    ++bit_pos;
+    return true;
+
 }
 
 unsigned char* buffered_reader::read_char_array(size_t len) {

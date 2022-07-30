@@ -16,7 +16,7 @@ public:
 
     bool has_next();
     bool get_next(unsigned char& c);
-
+    bool read_bit(bool&);
     unsigned char* read_char_array(size_t len);
     int16_t read_int16t();
     uint16_t read_uint16t();
@@ -26,8 +26,8 @@ public:
     uint64_t read_uint64t();
 
 private:
-    size_t const BUFF_LEN = 1024;
-    size_t pos, end_pos;
+    size_t const BUFF_LEN = 4;
+    size_t pos, end_pos, bit_pos;
     unsigned char* buffer;
     std::ifstream input;
 
