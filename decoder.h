@@ -13,6 +13,7 @@ private:
     buffered_reader source;
     std::unordered_map<std::vector<bool>, unsigned char> dict;
 
+    std::vector<bool> splice(std::vector<bool> const& src, std::vector<bool>::iterator const& begin, std::vector<bool>::iterator const& end);
     void build_tree();
-    void decode_data(buffered_writer &out);
+    void decode_data(buffered_writer &out, uint8_t mod);
 };

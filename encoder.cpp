@@ -19,23 +19,13 @@ void encoder::encode() {
     build_tree();
 }
 
-void print_code(buffered_writer& out, std::vector<bool>& code) {
-    for (int j = 0; j < code.size(); ++j) {
-        if (code[j]) {
-            out.write('1');
-        }
-        else {
-            out.write('0');
-        }
-    }
-}
-
 void encoder::save_to_file(const char* filename) {
     buffered_writer out(filename);
-    out.write(count_not_nulls());
     std::vector<bool> code;
     std::vector<std::vector<bool>> codes(256);
     gen_code(tree_root, codes, code);
+    out.write(count_mod(codes));
+    out.write(count_not_nulls());
     print_codes(out, codes);
     print_text(out, codes);
     out.close();
@@ -120,4 +110,12 @@ unsigned char encoder::count_not_nulls() {
         }
     }
     return count;
+}
+
+unsigned char encoder::count_mod(std::vector<std::vector<bool>>& codes) {
+    uint64_t len = 0;
+    for (size_t i = 0; i < 256; ++i) {
+        len += (freq[i] + 1) * codes[i].size();
+    }
+    return (8 - (len % 8)) % 8;
 }

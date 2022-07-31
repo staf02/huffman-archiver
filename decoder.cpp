@@ -4,9 +4,19 @@
 decoder::decoder(const char* filename) : source(filename) {};
 
 void decoder::save_to_file(const char* filename) {
+    unsigned char mod;
+    source.get_next(mod);
     build_tree();   
     buffered_writer out(filename);
-    decode_data(out);
+    decode_data(out, mod);
+}
+
+std::vector<bool> decoder::splice(std::vector<bool> const& src, std::vector<bool>::iterator const& begin, std::vector<bool>::iterator const& end) {
+    std::vector<bool> result;
+    for (auto it = begin; it != end; it++) {
+        result.push_back(*it);
+    }
+    return result;
 }
 
 void decoder::build_tree() {
@@ -38,14 +48,19 @@ void decoder::build_tree() {
     }
 }
 
-void decoder::decode_data(buffered_writer& out) {
+void decoder::decode_data(buffered_writer& out, uint8_t mod) {
     std::vector<bool> tmp;
     bool t;
     while (source.read_bit(t)) {
         tmp.push_back(t);
-        if (dict.find(tmp) != dict.end()) {
-            out.write(dict[tmp]);
-            tmp.clear();
+        if (tmp.size() > mod) {
+            size_t end_pos = tmp.size() - mod;
+            auto tmp1 = splice(tmp, tmp.begin(), tmp.begin() + end_pos);
+            if (dict.find(tmp1) != dict.end()) {
+                out.write(dict[tmp1]);
+                tmp.erase(tmp.begin(), tmp.begin() + end_pos);
+            }
         }
     }
+    return;
 }
