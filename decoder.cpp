@@ -7,41 +7,45 @@ void decoder::save_to_file(const char* filename) {
     build_tree();   
     buffered_writer out(filename);
     decode_data(out);
-    //out.close();
 }
 
 void decoder::build_tree() {
-    std::string tmp = "";
+    std::vector<bool> tmp;
+    std::vector<int> stat(256);
     bool is_symbol = false;
-    unsigned char c;
-    while (source.get_next(c)) {
-        if (c == '\n' && tmp.empty()) {
-            break;
+    int16_t count_of_symbols;
+    unsigned char c, d;
+    source.get_next(c);
+    if (c == 0) {
+        count_of_symbols = 256;
+    }
+    else {
+        count_of_symbols = c;
+    }
+    for (int16_t i = 0; i < count_of_symbols; i++) {
+        source.get_next(c);
+        source.get_next(d);
+        stat[c] = d;
+    }
+    bool t;
+    for (size_t i = 0; i < 256; i++) {
+        tmp.clear();
+        for (int j = 0; j < stat[i]; j++) {
+            source.read_bit(t);
+            tmp.push_back(t);
         }
-        if (c == ' ' && !is_symbol) {
-            is_symbol = true;
-        }
-        else if (is_symbol) {
-            unsigned char t;
-            source.get_next(t);
-            dict[tmp] = c;
-            tmp = "";
-            is_symbol = false;
-        }
-        else {
-            tmp += c;
-        }
+        dict[tmp] = static_cast<unsigned char>(i);
     }
 }
 
 void decoder::decode_data(buffered_writer& out) {
-    std::string tmp = "";
-    unsigned char c;
-    while (source.get_next(c)) {
-        tmp += c;
+    std::vector<bool> tmp;
+    bool t;
+    while (source.read_bit(t)) {
+        tmp.push_back(t);
         if (dict.find(tmp) != dict.end()) {
             out.write(dict[tmp]);
-            tmp = "";
+            tmp.clear();
         }
     }
 }

@@ -24,4 +24,5 @@ private:
     void gen_code(node* t, std::vector<std::vector<bool>> &, std::vector<bool>&);
     void print_codes(buffered_writer &out, std::vector<std::vector<bool>>&);
     void print_text(buffered_writer &out, std::vector<std::vector<bool>>&);
+    unsigned char count_not_nulls();
 };

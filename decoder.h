@@ -11,7 +11,7 @@ public:
 
 private:
     buffered_reader source;
-    std::unordered_map<std::string, unsigned char> dict;
+    std::unordered_map<std::vector<bool>, unsigned char> dict;
 
     void build_tree();
     void decode_data(buffered_writer &out);

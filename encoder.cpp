@@ -32,11 +32,11 @@ void print_code(buffered_writer& out, std::vector<bool>& code) {
 
 void encoder::save_to_file(const char* filename) {
     buffered_writer out(filename);
+    out.write(count_not_nulls());
     std::vector<bool> code;
     std::vector<std::vector<bool>> codes(256);
     gen_code(tree_root, codes, code);
     print_codes(out, codes);
-    out.write('\n');
     print_text(out, codes);
     out.close();
 }
@@ -74,6 +74,9 @@ void encoder::gen_code(node* t, std::vector<std::vector<bool>>& codes, std::vect
         return;
     }
     if (t->left == nullptr && t->right == nullptr) {
+        if (code.empty()) {
+            code.push_back(0);
+        }
         codes[static_cast<terminate_node*>(t)->c] = code;
         return;
     }
@@ -87,13 +90,17 @@ void encoder::gen_code(node* t, std::vector<std::vector<bool>>& codes, std::vect
 
 void encoder::print_codes(buffered_writer& out, std::vector<std::vector<bool>>& codes) {
     for (size_t i = 0; i < 256; ++i) {
+        if (codes[i].size() == 0) {
+            continue;
+        }
+        unsigned char c = i, d = codes[i].size();
+        out.write(c);
+        out.write(d);
+    }
+    for (size_t i = 0; i < 256; ++i) {
         if (codes[i].size() == 0)
             continue;
-        unsigned char c = i;
-        print_code(out, codes[i]);
-        out.write(' ');
-        out.write(c);
-        out.write('\n');
+        out.write_bit_array(codes[i]);
     }
 }
 
@@ -101,6 +108,16 @@ void encoder::print_text(buffered_writer& out, std::vector<std::vector<bool>>& c
     source.reset();
     unsigned char c;
     while (source.get_next(c)) {
-        print_code(out, codes[c]);
+        out.write_bit_array(codes[c]);
     }
+}
+
+unsigned char encoder::count_not_nulls() {
+    unsigned char count = 0;
+    for (size_t i = 0; i < 256; i++) {
+        if (freq[i] != 0) {
+            ++count;
+        }
+    }
+    return count;
 }
