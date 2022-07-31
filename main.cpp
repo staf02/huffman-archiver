@@ -11,8 +11,8 @@
 #include "buffered_writer.h"
 #include <ctime>
 
-bool files_equals(const char* a, const char* b) {
-    buffered_reader x(a), y(b);
+bool files_equal() {
+    buffered_reader x("input.txt"), y("output.txt");
     unsigned char c, d;
     bool t1 = x.get_next(c), t2 = y.get_next(d);
     while (t1 || t2) {
@@ -28,19 +28,19 @@ bool files_equals(const char* a, const char* b) {
 }
 
 void archive() {
-    encoder e("12.jpg");
+    encoder e("input.txt");
     e.encode();
-    std::cout << "Successfuly encoded\n";
     e.save_to_file("sample.jzip");
     decoder dec("sample.jzip");
     double t = clock();
-    dec.save_to_file("out12.jpg");
+    std::cout << t / 1000.0 << std::endl;
+    dec.save_to_file("output.txt");
     double t1 = clock();
-    std::cout << t1 - t << std::endl;
+    std::cout << (t1 - t) / 1000.0 << std::endl;
 }
 
 int main() {
     archive();
-    std::cout << files_equals("12.jpg", "out12.jpg");
+    files_equal();
     return 0;
 }

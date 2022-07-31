@@ -25,7 +25,7 @@ public:
 private:
     //pos is real length of buffer
     //when pos == 0, buffer is empty
-    size_t const BUFF_LEN = 1024;
+    size_t const BUFF_LEN = 8192;
     size_t pos = 0, bit_pos = 0;
     unsigned char byte = 0;
     unsigned char* buffer;

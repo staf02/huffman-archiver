@@ -15,7 +15,6 @@ void encoder::open(const char* filename) {
 
 void encoder::encode() {
     count_freq();
-    std::cout << "Frequency counted\n";
     build_tree();
 }
 

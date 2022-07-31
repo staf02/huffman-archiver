@@ -53,14 +53,14 @@ void decoder::decode_data(buffered_writer& out, uint8_t mod) {
     bool t;
     while (source.read_bit(t)) {
         tmp.push_back(t);
-        if (tmp.size() > mod) {
-            size_t end_pos = tmp.size() - mod;
-            auto tmp1 = splice(tmp, tmp.begin(), tmp.begin() + end_pos);
-            if (dict.find(tmp1) != dict.end()) {
-                out.write(dict[tmp1]);
-                tmp.erase(tmp.begin(), tmp.begin() + end_pos);
-            }
+        if (dict.find(tmp) != dict.end()) {
+            out.write(dict[tmp]);
+            tmp.clear();
         }
+        if (source.bits_left() == mod) {
+            return;
+        }
+        
     }
     return;
 }

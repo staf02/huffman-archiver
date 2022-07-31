@@ -5,6 +5,8 @@
 buffered_reader::buffered_reader() : buffer(new unsigned char[BUFF_LEN]), input() {}
 
 buffered_reader::buffered_reader(const char* filename) : buffer(new unsigned char[BUFF_LEN]), file_opened(true) {
+    std::ios_base::sync_with_stdio(false);
+    input.tie(0);
     input.open(filename, std::ios::binary);
     if (!input.is_open()) {
         throw "error while trying to open file";
@@ -69,6 +71,7 @@ bool buffered_reader::has_next() {
 bool buffered_reader::get_next(unsigned char& c){
     if (has_next()) {
         c = buffer[pos++];
+        last = c;
         return true;
     }
     return false;
@@ -83,7 +86,7 @@ bool buffered_reader::read_bit(bool& bit) {
         bit_pos = 0;
     } 
     else {
-        c = buffer[pos - 1]; //pos == 0 <=> end_pos == 0 <=> !has_next()
+        c = last; //pos == 0 <=> end_pos == 0 <=> !has_next()
     }
     bit = c & (1 << (7 - bit_pos));
     ++bit_pos;
@@ -125,4 +128,11 @@ int64_t buffered_reader::read_int64t() {
 
 uint64_t buffered_reader::read_uint64t() {
     return static_cast<uint64_t>(read_int(8));
+}
+
+uint8_t buffered_reader::bits_left() {
+    if (has_next()) {
+        return 8;
+    }
+    return 8 - bit_pos;
 }
