@@ -3,6 +3,7 @@
 #include "buffered_writer.h"
 #include "buffered_reader.h"
 #include <array>
+#include <unordered_map>
 
 class huffman_tree {
 public:
@@ -33,7 +34,8 @@ private:
     std::vector<node> tree;
     std::string char_stor;
     std::vector<std::vector<bool>> codes;
-    int actual_vertex;
+    int actual_vertex, root;
+    std::vector<bool> lists;
 
     void dfs(int v, std::vector<bool> &code);
 };

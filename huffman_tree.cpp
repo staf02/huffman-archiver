@@ -7,10 +7,8 @@ huffman_tree::node::node() : l(-1), r(-1) {};
 huffman_tree::node::node(int l, int r) : l(l), r(r) {};
 
 
-huffman_tree::huffman_tree() {
-    char_stor = "";
+huffman_tree::huffman_tree() : lists(), char_stor(""), actual_vertex(-1), root(-1) {
     tree = std::vector<node>();
-    actual_vertex = -1;
     codes.resize(ALPHABET_SIZE);
 }
 
@@ -36,7 +34,7 @@ void huffman_tree::build_by_freq(std::array<uint64_t, 256> const& arr) {
     if (tree.size() == 1) {
         tree.push_back(node(0, -1));
     }
-    actual_vertex = tree.size() - 1;
+    root = actual_vertex = tree.size() - 1;
 }
 
 void huffman_tree::gen_codes() {
@@ -70,16 +68,17 @@ void huffman_tree::build_from_file(buffered_reader& source) {
     unsigned char list_count;
     source.get_next(list_count);
     if (list_count == 1) {
-        std::vector<bool> code = { 0 };
         unsigned char c;
         source.get_next(c);
+        char_stor += c;
+        tree.push_back(node());
+        tree.push_back(node(0, -1));
+        actual_vertex = root = 1;
         return;
     }
     unsigned char nodes_count;
     source.get_next(nodes_count);
-    int t = list_count;
-    if (t == 0)
-        t = 256;
+    int t = (list_count - 1 + 256) % 256 + 1;
     for (size_t i = 0; i < t; i++) {
         unsigned char c;
         source.get_next(c);
@@ -96,7 +95,11 @@ void huffman_tree::build_from_file(buffered_reader& source) {
         int y = u * 256 + v;
         tree.push_back(node(x, y));
     }
-    actual_vertex = tree.size() - 1;
+    lists.resize(tree.size());
+    for (size_t i = 0; i < char_stor.length(); i++) {
+        lists[i] = true;
+    }
+    root = actual_vertex = tree.size() - 1;
     return;
 }
 
@@ -119,6 +122,7 @@ unsigned char huffman_tree::get_if_code() {
     return c;
 }
 
+
 size_t huffman_tree::size() {
     return tree.size();
 }
@@ -131,7 +135,9 @@ void huffman_tree::dfs(int v, std::vector<bool>& code) {
     code.push_back(0);
     dfs(tree[v].l, code);
     code.pop_back();
-    code.push_back(1);
-    dfs(tree[v].r, code);
-    code.pop_back();
+    if (tree[v].r != -1) {
+        code.push_back(1);
+        dfs(tree[v].r, code);
+        code.pop_back();
+    }
 }
