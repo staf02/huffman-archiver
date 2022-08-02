@@ -39,8 +39,27 @@ void archive() {
     std::cout << (t1 - t) / 1000.0 << std::endl;
 }
 
+void gen_file() {
+    std::ofstream out("input.txt");
+    int sz = (rand()) + 2;
+    for (int i = 0; i < sz; i++) {
+        unsigned char c = rand() % 256;
+        out << c;
+    }
+    return;
+}
+
 int main() {
+    srand(time(0));
+    /*while (true) {
+        gen_file();
+        archive();
+        std::cout << files_equal();
+        if (!files_equal()) {
+            return 0;
+        }
+    }*/
     archive();
-    files_equal();
+    std::cout << files_equal();
     return 0;
 }

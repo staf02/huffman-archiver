@@ -15,15 +15,12 @@ public:
     void save_to_file(const char*);
 
 private:
-    node* tree_root;
     buffered_reader source;
     std::array<uint64_t, 256> freq;
+    huffman_tree tr;
 
     void count_freq();
-    void build_tree();
-    void gen_code(node* t, std::vector<std::vector<bool>> &, std::vector<bool>&);
-    void print_codes(buffered_writer &out, std::vector<std::vector<bool>>&);
-    void print_text(buffered_writer &out, std::vector<std::vector<bool>>&);
+    void print_text(buffered_writer &out);
     unsigned char count_not_nulls();
-    unsigned char count_mod(std::vector<std::vector<bool>>& codes);
+    unsigned char count_mod();
 };

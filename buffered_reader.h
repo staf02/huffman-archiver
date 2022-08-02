@@ -28,7 +28,7 @@ public:
     uint8_t bits_left();
 
 private:
-    size_t const BUFF_LEN = 8192;
+    size_t const BUFF_LEN = 1 << 16;
     size_t pos = 0, end_pos = 0, bit_pos = 8;
     unsigned char* buffer;
     unsigned char last = 0;

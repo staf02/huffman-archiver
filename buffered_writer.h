@@ -18,6 +18,7 @@ public:
     void write(unsigned char const& c);
     void write(const char* str);
     void write(std::string const& str);
+    void write_uint16_t(uint16_t const&);
 
     void write_bit(bool const&);
     void write_bit_array(std::vector<bool> const&);
@@ -25,7 +26,7 @@ public:
 private:
     //pos is real length of buffer
     //when pos == 0, buffer is empty
-    size_t const BUFF_LEN = 8192;
+    size_t const BUFF_LEN = 1 << 16;
     size_t pos = 0, bit_pos = 0;
     unsigned char byte = 0;
     unsigned char* buffer;

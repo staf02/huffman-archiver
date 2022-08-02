@@ -51,6 +51,12 @@ void buffered_writer::write(std::string const& str) {
     }
 }
 
+void buffered_writer::write_uint16_t(uint16_t const& src) {
+    char* arr = static_cast<char*>(operator new(16));
+    memcpy(arr, &src, 2);
+    write(arr);
+}
+
 void buffered_writer::write_bit(bool const& t) {
     if (bit_pos == 8) {
         write(byte);
