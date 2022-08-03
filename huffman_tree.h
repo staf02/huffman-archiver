@@ -11,6 +11,7 @@ public:
     void build_by_freq(std::array<uint64_t, 256> const&);
     void gen_codes();
     std::vector<bool>& get_code(unsigned char c);
+    void print_code(buffered_writer&, unsigned char const&);
     void print_to_file(buffered_writer&);
 
     void build_from_file(buffered_reader&);
@@ -18,6 +19,7 @@ public:
     void go_to(bool const& x);
     bool is_code();
     unsigned char get_if_code();
+    void go_up(buffered_writer &, int v, int u);
 
     size_t size();
 
@@ -33,9 +35,9 @@ private:
 
     std::vector<node> tree;
     std::string char_stor;
-    std::vector<std::vector<bool>> codes;
-    int actual_vertex, root;
+    std::vector<int> p;
+    int actual_vertex, root, mod;
     std::vector<bool> lists;
 
-    void dfs(int v, std::vector<bool> &code);
+    void count_mod(std::vector<int> &len, int v, int h = 0);
 };

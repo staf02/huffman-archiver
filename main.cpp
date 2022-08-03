@@ -51,15 +51,14 @@ void gen_file() {
 
 int main() {
     srand(time(0));
-    /*while (true) {
+    while (true) {
         gen_file();
         archive();
         std::cout << files_equal();
         if (!files_equal()) {
             return 0;
         }
-    }*/
-    archive();
-    std::cout << files_equal();
+    };
+    //std::cout << files_equal();
     return 0;
 }

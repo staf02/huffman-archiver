@@ -1,6 +1,7 @@
 #include "buffered_reader.h"
 #include <algorithm>
 #include <bitset>
+#include <iostream>
 
 buffered_reader::buffered_reader() : buffer(new unsigned char[BUFF_LEN]), input() {}
 
@@ -9,7 +10,8 @@ buffered_reader::buffered_reader(const char* filename) : buffer(new unsigned cha
     input.tie(0);
     input.open(filename, std::ios::binary);
     if (!input.is_open()) {
-        throw "error while trying to open file";
+        throw std::exception();
+        std::cerr << "can't open file";
     }
 }
 

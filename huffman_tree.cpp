@@ -6,56 +6,63 @@ huffman_tree::node::node() : l(-1), r(-1) {};
 
 huffman_tree::node::node(int l, int r) : l(l), r(r) {};
 
-
-huffman_tree::huffman_tree() : lists(), char_stor(""), actual_vertex(-1), root(-1) {
+huffman_tree::huffman_tree() : lists(), char_stor(""), actual_vertex(-1), root(-1), mod(0) {
     tree = std::vector<node>();
-    codes.resize(ALPHABET_SIZE);
 }
 
 void huffman_tree::build_by_freq(std::array<uint64_t, 256> const& arr) {
     std::priority_queue<std::pair<uint64_t, int>, 
         std::vector<std::pair<uint64_t, int>>, 
         std::greater<std::pair<uint64_t, int>>> q;
+    int cnt = 0, last_index = ALPHABET_SIZE;
+    unsigned char c;
     for (size_t i = 0; i < 256; ++i) {
         if (arr[i] != 0) {
-            char_stor += static_cast<unsigned char>(i);
-            q.emplace(arr[i], tree.size());
-            tree.push_back(node());
+            c = i;
+            q.emplace(arr[i], i);
+            cnt++;
+            
         }
     }
+    if (cnt == 1) {
+        char_stor += c;
+        return;
+    }
+    tree.resize(ALPHABET_SIZE + cnt - 1);
+    p.resize(ALPHABET_SIZE + cnt - 1);
     while (q.size() != 1) {
         auto u = q.top();
         q.pop();
         auto v = q.top();
         q.pop();
-        q.emplace(u.first + v.first, tree.size());
-        tree.push_back(node(u.second, v.second));
+        q.emplace(u.first + v.first, last_index);
+        tree[last_index] = node(u.second, v.second);
+        p[u.second] = p[v.second] = last_index;
+        last_index++;
     }
-    if (tree.size() == 1) {
-        tree.push_back(node(0, -1));
-    }
+    std::vector<int> len(ALPHABET_SIZE, 0);
     root = actual_vertex = tree.size() - 1;
+    count_mod(len, root);
+    for (int i = 0; i < ALPHABET_SIZE; i++) {
+        mod += arr[i] * len[i];
+    }
+    mod = (8 - (mod % 8)) % 8;
 }
 
-void huffman_tree::gen_codes() {
-    std::vector<bool> code;
-    dfs(tree.size() - 1, code);
-}
-
-std::vector<bool>& huffman_tree::get_code(unsigned char c) {
-    return codes[c];
+void huffman_tree::print_code(buffered_writer& out, unsigned char const& c) {
+    go_up(out, c, p[c]);
 }
 
 void huffman_tree::print_to_file(buffered_writer& dist) {
-    unsigned char lists_count = char_stor.size(), nodes_count = tree.size() - char_stor.size();
-    dist.write(lists_count);
-    if (lists_count == 1) {
+    dist.write((unsigned char) mod);
+    if (tree.size() == 0) {
+        dist.write(1);
         dist.write(char_stor);
         return;
     }
+    unsigned char nodes_count = tree.size() - ALPHABET_SIZE;
     dist.write(nodes_count);
-    dist.write(char_stor);
-    for (size_t i = char_stor.length(); i < tree.size(); ++i) {
+    for (size_t i = ALPHABET_SIZE; i < tree.size(); ++i) {
         unsigned char l1 = tree[i].l / 256, l2 = tree[i].l % 256, r1 = tree[i].r / 256, r2 = tree[i].r % 256;
         dist.write(l1);
         dist.write(l2);
@@ -65,7 +72,7 @@ void huffman_tree::print_to_file(buffered_writer& dist) {
 }
 
 void huffman_tree::build_from_file(buffered_reader& source) {
-    unsigned char list_count;
+    /*unsigned char list_count;
     source.get_next(list_count);
     if (list_count == 1) {
         unsigned char c;
@@ -75,16 +82,11 @@ void huffman_tree::build_from_file(buffered_reader& source) {
         tree.push_back(node(0, -1));
         actual_vertex = root = 1;
         return;
-    }
+    }*/
     unsigned char nodes_count;
     source.get_next(nodes_count);
-    int t = (list_count - 1 + 256) % 256 + 1;
-    for (size_t i = 0; i < t; i++) {
-        unsigned char c;
-        source.get_next(c);
-        char_stor += c;
-        tree.push_back(node());
-    }
+    tree.resize(ALPHABET_SIZE + nodes_count);
+    int last_index = ALPHABET_SIZE;
     for (size_t i = 0; i < nodes_count; i++) {
         unsigned char u, v;
         source.get_next(u);
@@ -93,11 +95,7 @@ void huffman_tree::build_from_file(buffered_reader& source) {
         source.get_next(u);
         source.get_next(v);
         int y = u * 256 + v;
-        tree.push_back(node(x, y));
-    }
-    lists.resize(tree.size());
-    for (size_t i = 0; i < char_stor.length(); i++) {
-        lists[i] = true;
+        tree[last_index++] = node(x, y);
     }
     root = actual_vertex = tree.size() - 1;
     return;
@@ -113,13 +111,25 @@ void huffman_tree::go_to(bool const& x) {
 }
 
 bool huffman_tree::is_code() {
-    return actual_vertex < char_stor.size();
+    return actual_vertex < ALPHABET_SIZE;
 }
 
 unsigned char huffman_tree::get_if_code() {
-    unsigned char c = char_stor[actual_vertex];
+    unsigned char c = actual_vertex;
     actual_vertex = tree.size() - 1;
     return c;
+}
+
+void huffman_tree::go_up(buffered_writer& out, int v, int u) {
+    if (v != tree.size() - 1) {
+        go_up(out, p[v], v);
+    }
+    if (u == tree[v].l) {
+        out.write_bit((bool) 0);
+    }
+    else if (u == tree[v].r) {
+        out.write_bit(1);
+    }
 }
 
 
@@ -127,17 +137,13 @@ size_t huffman_tree::size() {
     return tree.size();
 }
 
-void huffman_tree::dfs(int v, std::vector<bool>& code) {
-    if (v < char_stor.size()) {
-        codes[static_cast<unsigned char>(char_stor[v])] = code;
+void huffman_tree::count_mod(std::vector<int> &len, int v, int h) {
+    if (v == -1) {
         return;
     }
-    code.push_back(0);
-    dfs(tree[v].l, code);
-    code.pop_back();
-    if (tree[v].r != -1) {
-        code.push_back(1);
-        dfs(tree[v].r, code);
-        code.pop_back();
+    if (v < ALPHABET_SIZE) {
+        len[v] = h;
     }
+    count_mod(len, tree[v].l, h + 1);
+    count_mod(len, tree[v].r, h + 1);
 }
