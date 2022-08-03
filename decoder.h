@@ -14,6 +14,5 @@ private:
     std::unordered_map<std::vector<bool>, unsigned char> dict;
     huffman_tree tr;
 
-    void build_tree();
     void decode_data(buffered_writer &out, uint8_t mod);
 };

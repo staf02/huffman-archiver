@@ -69,12 +69,6 @@ void buffered_writer::write_bit(bool const& t) {
     ++bit_pos;
 }
 
-void buffered_writer::write_bit_array(std::vector<bool> const& arr) {
-    for (auto const& t : arr) {
-        write_bit(t);
-    }
-}
-
 void buffered_writer::write_buffer() {
     if (pos == BUFF_LEN) {
         out.write((char*) buffer, BUFF_LEN);

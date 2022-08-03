@@ -21,6 +21,4 @@ private:
 
     void count_freq();
     void print_text(buffered_writer &out);
-    unsigned char count_not_nulls();
-    unsigned char count_mod();
 };

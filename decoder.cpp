@@ -6,14 +6,9 @@ decoder::decoder(const char* filename) : source(filename), tr() {};
 void decoder::save_to_file(const char* filename) {
     unsigned char mod;
     source.get_next(mod);
-    build_tree();   
+    tr.build_from_file(source);
     buffered_writer out(filename);
     decode_data(out, mod);
-}
-
-void decoder::build_tree() {
-    tr.build_from_file(source);
-    //tr.gen_codes();
 }
 
 void decoder::decode_data(buffered_writer& out, uint8_t mod) {

@@ -57,14 +57,6 @@ void buffered_reader::check_buffer() {
     pos = 0;
 }
 
-int64_t buffered_reader::read_int(size_t bit_depth) {
-    size_t len = std::min(bit_depth, static_cast<size_t>(input.gcount()));
-    unsigned char* arr = read_char_array(len);
-    int64_t res;
-    memcpy(&res, arr, len);
-    return res;
-}
-
 bool buffered_reader::has_next() {
     check_buffer();
     return end_pos != 0;
@@ -94,42 +86,6 @@ bool buffered_reader::read_bit(bool& bit) {
     ++bit_pos;
     return true;
 
-}
-
-unsigned char* buffered_reader::read_char_array(size_t len) {
-    check_buffer();
-    if (static_cast<size_t>(input.gcount()) + end_pos - pos < len) {
-        throw std::runtime_error("error: cannot read len chars");
-    }
-    unsigned char* res = static_cast<unsigned char*>(operator new(len * sizeof(unsigned char)));
-    for (size_t i = 0; i < len; ++i) {
-        get_next(res[i]);
-    }
-    return res;
-}
-
-int16_t buffered_reader::read_int16t() {
-    return static_cast<int16_t>(read_int(2));
-}
-
-uint16_t buffered_reader::read_uint16t() {
-    return static_cast<uint16_t>(read_int(2));
-}
-
-int32_t buffered_reader::read_int32t() {
-    return static_cast<int32_t>(read_int(4));
-}
-
-uint32_t buffered_reader::read_uint32t() {
-    return static_cast<uint32_t>(read_int(4));
-}
-
-int64_t buffered_reader::read_int64t() {
-    return static_cast<int64_t>(read_int(8));
-}
-
-uint64_t buffered_reader::read_uint64t() {
-    return static_cast<uint64_t>(read_int(8));
 }
 
 uint8_t buffered_reader::bits_left() {

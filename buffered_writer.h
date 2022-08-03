@@ -21,7 +21,6 @@ public:
     void write_uint16_t(uint16_t const&);
 
     void write_bit(bool const&);
-    void write_bit_array(std::vector<bool> const&);
 
 private:
     //pos is real length of buffer

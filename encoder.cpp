@@ -20,11 +20,9 @@ void encoder::encode() {
 
 void encoder::save_to_file(const char* filename) {
     buffered_writer out(filename);
+    out.write(tr.count_mod(freq));
     tr.print_to_file(out);
-    auto x = clock();
-    //std::cout << clock() << std::endl;
     print_text(out);
-    //std::cout << clock() - x << std::endl;
     out.close();
 }
 
@@ -41,22 +39,4 @@ void encoder::print_text(buffered_writer& out) {
     while (source.get_next(c)) {
         tr.print_code(out, c);
     }
-}
-
-unsigned char encoder::count_not_nulls() {
-    unsigned char count = 0;
-    for (size_t i = 0; i < 256; i++) {
-        if (freq[i] != 0) {
-            ++count;
-        }
-    }
-    return count;
-}
-
-unsigned char encoder::count_mod() {
-    uint64_t len = 0;
-    for (size_t i = 0; i < 256; ++i) {
-        //len += (freq[i]) * tr.get_code(i).size();
-    }
-    return (8 - (len % 8)) % 8;
 }

@@ -50,7 +50,7 @@ void gen_file() {
 }
 
 int main() {
-    srand(time(0));
+    /*srand(time(0));
     while (true) {
         gen_file();
         archive();
@@ -58,7 +58,8 @@ int main() {
         if (!files_equal()) {
             return 0;
         }
-    };
-    //std::cout << files_equal();
+    };*/
+    archive();
+    std::cout << files_equal();
     return 0;
 }
