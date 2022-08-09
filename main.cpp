@@ -29,7 +29,6 @@ bool files_equal() {
 
 void archive() {
     encoder e("input.txt");
-    e.encode();
     e.save_to_file("sample.jzip");
     decoder dec("sample.jzip");
     double t = clock();

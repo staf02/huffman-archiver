@@ -8,7 +8,6 @@ void encode(std::string const& src, std::string const& dst) {
 
 void encode(const char* src, const char* dst) {
     encoder e(src);
-    e.encode();
     e.save_to_file(dst);
 }
 

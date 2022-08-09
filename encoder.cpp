@@ -5,17 +5,10 @@
 #include <iostream>
 #include "buffered_writer.h"
 
-encoder::encoder() : source(), freq(), tr() {}
-
-encoder::encoder(const char* filename) : source(filename), freq(), tr() {}
-
-void encoder::open(const char* filename) {
-    source.open(filename);
-}
-
-void encoder::encode() {
+encoder::encoder(const char* filename) : source(filename), freq(), tr() {   
     count_freq();
     tr.build_by_freq(freq);
+    tr.gen_codes();
 }
 
 void encoder::save_to_file(const char* filename) {
@@ -36,7 +29,44 @@ void encoder::count_freq() {
 void encoder::print_text(buffered_writer& out) {
     source.reset();
     unsigned char c;
+    unsigned char buf = 0;
+    int16_t pos = 0, pos_in_arr = 0, bit_pos = 0;
     while (source.get_next(c)) {
-        tr.print_code(out, c);
+        pos_in_arr = 0, bit_pos = 0;
+        while (bit_pos + pos_in_arr * 8 < tr.lens[c]) {
+            buf *= 2;
+            buf += (tr.codes[c][pos_in_arr] & (1 << (7 - bit_pos))) > 0 ? 1 : 0;
+            pos++;
+            if (pos == 8) {
+                out.write(buf);
+                pos = 0;
+                buf = 0;
+            }
+            bit_pos++;
+            if (bit_pos == 8) {
+                bit_pos = 0;
+                pos_in_arr++;
+            }
+        }
+        /*for (int i = 0; i < tr.codes[c].size() - 1; i++) {
+            buf += tr.codes[c][i] >> pos;
+            out.write(buf);
+            buf = (tr.codes[c][i] & (1 << (pos) - 1));
+        }
+        buf += tr.codes[c].back() >> (pos);
+        if ((tr.lens[c] - 1) % 8 + 1 + pos >= 8) {
+            out.write(buf);
+            buf = 0;
+            if ((tr.lens[c] - 1) % 8 + 1 + pos > 8) {
+                buf += (((1 << pos) - 1) & tr.codes[c].back()) << (8 - pos);
+            }
+            pos = ((tr.lens[c] - 1) % 8 + 1 + pos) % 8;
+        }
+        else {
+            pos += tr.lens[c] % 8;
+        }*/
+    }
+    if (pos != 0) {
+        out.write(buf << (8 - pos));
     }
 }

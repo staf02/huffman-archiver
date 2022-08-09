@@ -7,11 +7,11 @@
 
 class encoder {
 public:
-    encoder();
+    encoder() = delete;
     encoder(const char*);
+    encoder(encoder& other) = delete;
+    encoder& operator=(encoder& r) = delete;
     ~encoder() = default;
-    void open(const char*);
-    void encode();
     void save_to_file(const char*);
 
 private:

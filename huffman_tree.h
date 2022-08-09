@@ -7,10 +7,17 @@
 
 class huffman_tree {
 public:
+    std::vector<std::vector<unsigned char>> codes;
+    std::vector<uint16_t> lens;
     huffman_tree();
+    huffman_tree(huffman_tree& other) = delete;
+    huffman_tree& operator=(huffman_tree& r) = delete;
+    ~huffman_tree() = default;
+
     void build_by_freq(std::array<uint64_t, 256> const&);
     unsigned char count_mod(std::array<uint64_t, 256> const&);
     void print_to_file(buffered_writer&);
+    void gen_codes();
     void print_code(buffered_writer&, unsigned char const&);
     void build_from_file(buffered_reader&);
 
@@ -32,6 +39,8 @@ private:
     std::vector<node> tree;
     std::vector<int16_t> p;
 
+
     void count_len(std::vector<int16_t> &len, int16_t v, int16_t h = 0);
     void go_up(buffered_writer&, int16_t v, int16_t u);
+    void dfs(int16_t v, std::vector<unsigned char> &code_arr, unsigned char c = 0, int16_t len = 0);
 };

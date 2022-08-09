@@ -60,13 +60,18 @@ void huffman_tree::print_to_file(buffered_writer& dist) {
     }
 }
 
+void huffman_tree::gen_codes() {
+    codes.resize(ALPHABET_SIZE);
+    lens.resize(ALPHABET_SIZE);
+    std::vector<unsigned char> v;
+    dfs(tree.size() - 1, v, 0, 0);
+}
+
 unsigned char huffman_tree::count_mod(std::array<uint64_t, 256> const& arr) {
-    std::vector<int16_t> len(ALPHABET_SIZE, 0);
     root = actual_vertex = tree.size() - 1;
-    count_len(len, root);
     int16_t mod = 0;
     for (int16_t i = 0; i < ALPHABET_SIZE; i++) {
-        mod += arr[i] * len[i];
+        mod += arr[i] * lens[i];
     }
     mod = (8 - (mod % 8)) % 8;
     return mod;
@@ -131,6 +136,32 @@ void huffman_tree::go_up(buffered_writer& out, int16_t v, int16_t u) {
     }
     else if (u == tree[v].r) {
         out.write_bit(1);
+    }
+}
+
+void huffman_tree::dfs(int16_t v, std::vector<unsigned char> &code_arr, unsigned char code, int16_t len) {
+    if (v == -1) {
+        return;
+    }
+    if (len % 8 == 0 && len != 0) {
+        code_arr.push_back(code);
+        code = 0;
+    }
+    if (v < ALPHABET_SIZE) {
+        if (len % 8 != 0) {
+            code_arr.push_back(code);
+        }
+        lens[v] = len;
+        codes[v] = code_arr;
+        if (len % 8 != 0) {
+            code_arr.pop_back();
+        }
+    }
+    dfs(tree[v].l, code_arr, code, len + 1);
+    code += 1 << (7 - (len % 8));
+    dfs(tree[v].r, code_arr, code, len + 1); 
+    if (len % 8 == 0 && len != 0) {
+        code_arr.pop_back();
     }
 }
 
