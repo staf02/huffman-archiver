@@ -18,7 +18,6 @@ public:
     unsigned char count_mod(std::array<uint64_t, 256> const&);
     void print_to_file(buffered_writer&);
     void gen_codes();
-    void print_code(buffered_writer&, unsigned char const&);
     void build_from_file(buffered_reader&);
 
     void go_to(bool const& x);

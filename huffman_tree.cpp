@@ -39,10 +39,6 @@ void huffman_tree::build_by_freq(std::array<uint64_t, 256> const& arr) {
     }
 }
 
-void huffman_tree::print_code(buffered_writer& out, unsigned char const& c) {
-    go_up(out, c, p[c]);
-}
-
 void huffman_tree::print_to_file(buffered_writer& dist) {
     if (tree.back().r == -1) {
         dist.write(bool(0));
