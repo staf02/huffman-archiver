@@ -4,21 +4,20 @@
 #include <iostream>
 
 buffered_reader::buffered_reader(const char* filename) : buffer(new unsigned char[BUFF_LEN]) {
-    input.open(filename, std::ios::binary);
-    if (!input.is_open()) {
-        throw std::exception();
-        std::cerr << "can't open file";
+    src.open(filename, std::ios::binary);
+    if (!src.is_open()) {
+        throw std::runtime_error("cannot open file " + std::string(filename));
     }
 }
 
 buffered_reader::~buffered_reader() {
     delete[] buffer;
-    input.close();
+    src.close();
 }
 
 void buffered_reader::reset() {
-    input.clear();
-    input.seekg(0, std::ios::beg);
+    src.clear();
+    src.seekg(0, std::ios::beg);
     check_buffer();
 }
 
@@ -26,8 +25,8 @@ void buffered_reader::check_buffer() {
     if (pos != end_pos) {
         return;
     }
-    input.read((char*) buffer, BUFF_LEN);
-    end_pos = std::min(BUFF_LEN, static_cast<size_t>(input.gcount()));
+    src.read((char*) buffer, BUFF_LEN);
+    end_pos = std::min(BUFF_LEN, static_cast<size_t>(src.gcount()));
     pos = 0;
 }
 

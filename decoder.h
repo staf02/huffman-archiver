@@ -15,7 +15,7 @@ public:
     void save_to_file(const char*);
 
 private:
-    buffered_reader source;
+    buffered_reader src;
     huffman_tree tr;
 
     void decode_data(buffered_writer &out, uint8_t mod);

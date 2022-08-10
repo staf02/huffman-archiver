@@ -19,7 +19,7 @@ private:
     size_t const BUFF_LEN = 1 << 10;
     size_t pos = 0, end_pos = 0;
     unsigned char* buffer;
-    std::ifstream input;
+    std::ifstream src;
 
     void check_buffer();
 };

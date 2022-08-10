@@ -1,24 +1,24 @@
 #include "decoder.h"
 #include "buffered_writer.h"
 
-decoder::decoder(const char* filename) : source(filename), tr() {};
+decoder::decoder(const char* filename) : src(filename), tr() {};
 
 void decoder::save_to_file(const char* filename) {
-    buffered_writer out(filename);
-    if (!source.has_next()) {
+    buffered_writer dst(filename);
+    if (!src.has_next()) {
         return;
     }
     unsigned char mod;
-    source.get_next(mod);
-    tr.build_from_file(source);
-    decode_data(out, mod);
+    src.get_next(mod);
+    tr.build_from_file(src);
+    decode_data(dst, mod);
 }
 
-void decoder::decode_data(buffered_writer& out, uint8_t mod) {
+void decoder::decode_data(buffered_writer& dst, uint8_t mod) {
     unsigned char c;
-    while (source.get_next(c)) {
+    while (src.get_next(c)) {
         int end_pos = 0;
-        if (!source.has_next()) {
+        if (!src.has_next()) {
             end_pos = mod;
         }
         if (end_pos != 0) {
@@ -26,12 +26,12 @@ void decoder::decode_data(buffered_writer& out, uint8_t mod) {
               bool t = (c & (1 << i)) > 0;
               tr.go_to(t);
               if (tr.is_code()) {
-                out.write(tr.get_if_code());
+                dst.write(tr.get_if_code());
               }
             }
         }
         else {
-            tr.go_to_c(out, c);
+            tr.go_to_c(dst, c);
         }
     }
     return;

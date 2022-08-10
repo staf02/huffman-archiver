@@ -15,7 +15,7 @@ public:
     void save_to_file(const char*);
 
 private:
-    buffered_reader source;
+    buffered_reader src;
     std::array<uint64_t, 256> freq;
     huffman_tree tr;
 
