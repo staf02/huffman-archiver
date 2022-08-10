@@ -9,6 +9,7 @@
 #include "decoder.h"
 #include <bitset>
 #include "buffered_writer.h"
+#include "archiver.h"
 #include <ctime>
 
 bool files_equal() {
@@ -28,14 +29,8 @@ bool files_equal() {
 }
 
 void archive() {
-    encoder e("input.txt");
-    e.save_to_file("sample.jzip");
-    decoder dec("sample.jzip");
-    double t = clock();
-    std::cout << t / 1000.0 << std::endl;
-    dec.save_to_file("output.txt");
-    double t1 = clock();
-    std::cout << (t1 - t) / 1000.0 << std::endl;
+    //encode("input.txt", "sample.jzip");
+    decode("sample.jzip", "output.txt");
 }
 
 void gen_file() {
@@ -58,7 +53,12 @@ int main() {
             return 0;
         }
     };*/
-    archive();
-    std::cout << files_equal();
+    try {
+        archive();
+        std::cout << files_equal();
+    }
+    catch (std::runtime_error& e) {
+        std::cerr << e.what();
+    }
     return 0;
 }

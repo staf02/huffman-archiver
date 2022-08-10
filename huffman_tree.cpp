@@ -70,23 +70,26 @@ unsigned char huffman_tree::count_mod(std::array<uint64_t, 256> const& arr) {
     return mod;
 }
 
-void huffman_tree::build_from_file(buffered_reader& source) {
+void huffman_tree::build_from_file(buffered_reader& src) {
     unsigned char nodes_count;
-    source.get_next(nodes_count);
+    if (!src.get_next(nodes_count)) {
+        throw std::runtime_error("empty huffman tree");
+    }
     tree.resize(ALPHABET_SIZE + nodes_count);
     if (nodes_count == 0) {
        unsigned char c;
-       source.get_next(c);
+       src.get_next(c);
        tree.push_back(node(c, -1));
     }
     else {
+        std::vector<bool> used(tree.size(), false);
         int16_t last_index = ALPHABET_SIZE;
         for (size_t i = 0; i < nodes_count; i++) {
             unsigned char c;
             unsigned char u, v;
-            source.get_next(c);
-            source.get_next(u);
-            source.get_next(v);
+            if (!src.get_next(c) || !src.get_next(u) || !src.get_next(v)) {
+                throw std::runtime_error("incomplete huffman tree");
+            }
             int16_t x = u, y = v;
             if (c & 1) {
                 x += ALPHABET_SIZE;
@@ -94,6 +97,10 @@ void huffman_tree::build_from_file(buffered_reader& source) {
             if (c & 2) {
                 y += ALPHABET_SIZE;
             }
+            if (used[x] || used[y] || x >= last_index || y >= last_index) {
+                throw std::runtime_error("wrong huffman tree");
+            }
+            used[x] = used[y] = true;
             tree[last_index++] = node(x, y);
         }
     }
@@ -151,7 +158,7 @@ void huffman_tree::dfs(int16_t v, std::vector<unsigned char> &code_arr, unsigned
         codes[v] = code_arr;
         if (len % 8 != 0) {
             code_arr.pop_back();
-        }
+        }ss
     }
     dfs(tree[v].l, code_arr, code, len + 1);
     code += 1 << (7 - (len % 8));
@@ -172,7 +179,12 @@ void huffman_tree::count_dp(int v, int u = -1) {
             actual_vertex = v;
             for (int j = 7; j >= 0; j--) {
                 bool tmp = (i & (1 << j)) > 0;
-                go_to(tmp);
+                if (!tmp) {
+                    actual_vertex = tree[actual_vertex].l;
+                }
+                else {
+                    actual_vertex = tree[actual_vertex].r;
+                }
                 if (actual_vertex == -1) {
                     dp[v][i] = -1;
                     str_dp[v][i].clear();

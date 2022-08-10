@@ -2,7 +2,11 @@
 
 buffered_writer::buffered_writer() : buffer(new unsigned char[BUFF_LEN]), dst() {};
 
-buffered_writer::buffered_writer(const char* filename) : buffer(new unsigned char[BUFF_LEN]), dst(filename, std::ios::binary) {};
+buffered_writer::buffered_writer(const char* filename) : buffer(new unsigned char[BUFF_LEN]), dst(filename, std::ios::binary) {
+    if (!dst.is_open()) {
+        throw std::runtime_error("cannot open file " + std::string(filename));
+    }
+};
 
 buffered_writer::~buffered_writer() {
     close();
