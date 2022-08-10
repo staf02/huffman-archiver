@@ -23,6 +23,7 @@ public:
     void go_to(bool const& x);
     bool is_code();
     unsigned char get_if_code();
+    void go_to_c(buffered_writer &out, unsigned char c);
 
 
 private:
@@ -37,9 +38,12 @@ private:
     int16_t actual_vertex, root;
     std::vector<node> tree;
     std::vector<int16_t> p;
+    std::vector<std::vector<int>> dp;
+    std::vector<std::vector<std::string>> str_dp;
 
 
     void count_len(std::vector<int16_t> &len, int16_t v, int16_t h = 0);
     void go_up(buffered_writer&, int16_t v, int16_t u);
     void dfs(int16_t v, std::vector<unsigned char> &code_arr, unsigned char c = 0, int16_t len = 0);
+    void count_dp(int v, int u);
 };

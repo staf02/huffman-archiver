@@ -18,12 +18,17 @@ void decoder::decode_data(buffered_writer& out, uint8_t mod) {
         if (!source.has_next()) {
             end_pos = mod;
         }
-        for (int i = 7; i >= end_pos; i--) {
-          bool t = (c & (1 << i)) > 0;
-          tr.go_to(t);
-          if (tr.is_code()) {
-            out.write(tr.get_if_code());
-          }
+        if (end_pos != 0) {
+            for (int i = 7; i >= end_pos; i--) {
+              bool t = (c & (1 << i)) > 0;
+              tr.go_to(t);
+              if (tr.is_code()) {
+                out.write(tr.get_if_code());
+              }
+            }
+        }
+        else {
+            tr.go_to_c(out, c);
         }
     }
     return;

@@ -101,6 +101,10 @@ void huffman_tree::build_from_file(buffered_reader& source) {
         }
     }
     root = actual_vertex = tree.size() - 1;
+    dp.resize(tree.size());
+    str_dp.resize(tree.size());
+    count_dp(root, -1);
+    actual_vertex = root;
     return;
 }
 
@@ -121,6 +125,11 @@ unsigned char huffman_tree::get_if_code() {
     unsigned char c = actual_vertex;
     actual_vertex = tree.size() - 1;
     return c;
+}
+
+void huffman_tree::go_to_c(buffered_writer& out, unsigned char c) {
+    out.write(str_dp[actual_vertex][c]);
+    actual_vertex = dp[actual_vertex][c];
 }
 
 void huffman_tree::go_up(buffered_writer& out, int16_t v, int16_t u) {
@@ -159,6 +168,57 @@ void huffman_tree::dfs(int16_t v, std::vector<unsigned char> &code_arr, unsigned
     if (len % 8 == 0 && len != 0) {
         code_arr.pop_back();
     }
+}
+
+void huffman_tree::count_dp(int v, int u = -1) {
+    if (v == -1) {
+        return;
+    }
+    dp[v].resize(256, -1);
+    str_dp[v].resize(256, "");
+    for (int i = 0; i < 256; i++) {
+        actual_vertex = v;
+        for (int j = 7; j >= 0; j--) {
+            bool tmp = (i & (1 << j)) > 0;
+            go_to(tmp);
+            if (actual_vertex == -1) {
+                dp[v][i] = -1;
+                str_dp[v][i].clear();
+                break;
+            }
+            if (is_code()) {
+                str_dp[v][i] += get_if_code();
+            }
+        }
+        dp[v][i] = actual_vertex;
+    }
+    /*if (v == root) {
+        
+        }
+    }*/
+    /*else {
+        for (int i = 0; i < 256; i++) {
+            actual_vertex = dp[u][i];
+            int j = (i << 1) % 256;
+            if (tree[actual_vertex].l != -1) {
+                go_to(0);
+                if (is_code()) {
+                    str_dp[v][j] += get_if_code();
+                }
+                dp[v][j] = actual_vertex;
+            }
+            actual_vertex = dp[u][i];
+            if (tree[actual_vertex].r != -1) {
+                go_to(1);
+                if (is_code()) {
+                    str_dp[v][j + 1] += get_if_code();
+                }
+                dp[v][j + 1] = actual_vertex;
+            }
+        }
+    }*/
+    count_dp(tree[v].l, v);
+    count_dp(tree[v].r, v);
 }
 
 void huffman_tree::count_len(std::vector<int16_t> &len, int16_t v, int16_t h) {
