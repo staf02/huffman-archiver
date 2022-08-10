@@ -158,7 +158,7 @@ void huffman_tree::dfs(int16_t v, std::vector<unsigned char> &code_arr, unsigned
         codes[v] = code_arr;
         if (len % 8 != 0) {
             code_arr.pop_back();
-        }ss
+        }
     }
     dfs(tree[v].l, code_arr, code, len + 1);
     code += 1 << (7 - (len % 8));
@@ -168,7 +168,7 @@ void huffman_tree::dfs(int16_t v, std::vector<unsigned char> &code_arr, unsigned
     }
 }
 
-void huffman_tree::count_dp(int v, int u = -1) {
+void huffman_tree::count_dp(int16_t v, int16_t u = -1) {
     if (v == -1 || v < ALPHABET_SIZE) {
         return;
     }
@@ -177,7 +177,7 @@ void huffman_tree::count_dp(int v, int u = -1) {
     if (v == root) {
         for (int i = 0; i < 256; i++) {
             actual_vertex = v;
-            for (int j = 7; j >= 0; j--) {
+            for (int8_t j = 7; j >= 0; j--) {
                 bool tmp = (i & (1 << j)) > 0;
                 if (!tmp) {
                     actual_vertex = tree[actual_vertex].l;
@@ -198,17 +198,17 @@ void huffman_tree::count_dp(int v, int u = -1) {
         }
     }
     else {
-        int l, r;
+        int16_t l, r;
         if (tree[u].l == v) {
             l = 0, r = 128;
         }
         else {
             l = 128, r = 256;
         }
-        for (int i = l; i < r; i++) {
+        for (int16_t i = l; i < r; i++) {
             bool t = (i & (1 << 7)) > 0;
             actual_vertex = dp[u][i];
-            int j = (i << 1) % 256;
+            int16_t j = (i << 1) % 256;
             if (tree[actual_vertex].l != -1) {
                 go_to(0);
                 str_dp[v][j] = str_dp[u][i];

@@ -29,7 +29,7 @@ bool files_equal() {
 }
 
 void archive() {
-    //encode("input.txt", "sample.jzip");
+    encode("input.txt", "sample.jzip");
     decode("sample.jzip", "output.txt");
 }
 
@@ -44,7 +44,7 @@ void gen_file() {
 }
 
 int main() {
-    /*srand(time(0));
+    srand(time(0));
     while (true) {
         gen_file();
         archive();
@@ -52,13 +52,13 @@ int main() {
         if (!files_equal()) {
             return 0;
         }
-    };*/
-    try {
+    };
+    /*try {
         archive();
         std::cout << files_equal();
     }
     catch (std::runtime_error& e) {
         std::cerr << e.what();
-    }
+    }*/
     return 0;
 }

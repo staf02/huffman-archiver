@@ -41,5 +41,5 @@ private:
     std::vector<std::vector<std::string>> str_dp;
 
     void dfs(int16_t v, std::vector<unsigned char> &code_arr, unsigned char c = 0, int16_t len = 0);
-    void count_dp(int v, int u);
+    void count_dp(int16_t v, int16_t u);
 };

@@ -39,7 +39,7 @@ void encoder::print_text(buffered_writer& dst) {
     int16_t pos = 0, pos_in_arr = 0, bit_pos = 0;
     while (src.get_next(c)) {
         for (int i = 0; i < tr.codes[c].size() - 1; i++) {
-            buf += tr.codes[c][i] >> pos;
+            buf |= tr.codes[c][i] >> pos;
             dst.write(buf);
             buf = ((tr.codes[c][i]) << (8 - pos));
         }
