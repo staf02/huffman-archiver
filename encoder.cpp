@@ -6,6 +6,9 @@
 #include "buffered_writer.h"
 
 encoder::encoder(const char* filename) : source(filename), freq(), tr() {   
+    if (!source.has_next()) {
+        return;
+    }
     count_freq();
     tr.build_by_freq(freq);
     tr.gen_codes();
@@ -13,6 +16,9 @@ encoder::encoder(const char* filename) : source(filename), freq(), tr() {
 
 void encoder::save_to_file(const char* filename) {
     buffered_writer out(filename);
+    if (!source.has_next()) {
+        return;
+    }
     out.write(tr.count_mod(freq));
     tr.print_to_file(out);
     print_text(out);

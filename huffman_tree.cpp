@@ -171,37 +171,44 @@ void huffman_tree::dfs(int16_t v, std::vector<unsigned char> &code_arr, unsigned
 }
 
 void huffman_tree::count_dp(int v, int u = -1) {
-    if (v == -1) {
+    if (v == -1 || v < ALPHABET_SIZE) {
         return;
     }
     dp[v].resize(256, -1);
     str_dp[v].resize(256, "");
-    for (int i = 0; i < 256; i++) {
-        actual_vertex = v;
-        for (int j = 7; j >= 0; j--) {
-            bool tmp = (i & (1 << j)) > 0;
-            go_to(tmp);
-            if (actual_vertex == -1) {
-                dp[v][i] = -1;
-                str_dp[v][i].clear();
-                break;
-            }
-            if (is_code()) {
-                str_dp[v][i] += get_if_code();
-            }
-        }
-        dp[v][i] = actual_vertex;
-    }
-    /*if (v == root) {
-        
-        }
-    }*/
-    /*else {
+    if (v == root) {
         for (int i = 0; i < 256; i++) {
+            actual_vertex = v;
+            for (int j = 7; j >= 0; j--) {
+                bool tmp = (i & (1 << j)) > 0;
+                go_to(tmp);
+                if (actual_vertex == -1) {
+                    dp[v][i] = -1;
+                    str_dp[v][i].clear();
+                    break;
+                }
+                if (is_code()) {
+                    str_dp[v][i] += get_if_code();
+                }
+            }
+            dp[v][i] = actual_vertex;
+        }
+    }
+    else {
+        int l, r;
+        if (tree[u].l == v) {
+            l = 0, r = 128;
+        }
+        else {
+            l = 128, r = 256;
+        }
+        for (int i = l; i < r; i++) {
+            bool t = (i & (1 << 7)) > 0;
             actual_vertex = dp[u][i];
             int j = (i << 1) % 256;
             if (tree[actual_vertex].l != -1) {
                 go_to(0);
+                str_dp[v][j] = str_dp[u][i];
                 if (is_code()) {
                     str_dp[v][j] += get_if_code();
                 }
@@ -210,13 +217,14 @@ void huffman_tree::count_dp(int v, int u = -1) {
             actual_vertex = dp[u][i];
             if (tree[actual_vertex].r != -1) {
                 go_to(1);
+                str_dp[v][j + 1] = str_dp[u][i];
                 if (is_code()) {
                     str_dp[v][j + 1] += get_if_code();
                 }
                 dp[v][j + 1] = actual_vertex;
             }
         }
-    }*/
+    }
     count_dp(tree[v].l, v);
     count_dp(tree[v].r, v);
 }

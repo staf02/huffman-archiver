@@ -4,10 +4,13 @@
 decoder::decoder(const char* filename) : source(filename), tr() {};
 
 void decoder::save_to_file(const char* filename) {
+    buffered_writer out(filename);
+    if (!source.has_next()) {
+        return;
+    }
     unsigned char mod;
     source.get_next(mod);
     tr.build_from_file(source);
-    buffered_writer out(filename);
     decode_data(out, mod);
 }
 
