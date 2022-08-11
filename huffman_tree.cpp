@@ -1,6 +1,7 @@
 #include "huffman_tree.h"
 #include <queue>
 #include <iostream>
+#include <algorithm>
 
 huffman_tree::node::node() : l(-1), r(-1) {};
 
@@ -80,9 +81,13 @@ void huffman_tree::build_from_file(buffered_reader& src) {
        unsigned char c;
        src.get_next(c);
        tree.push_back(node(c, -1));
+       root = actual_vertex = tree.size() - 1;
+       for (size_t i = 0; i < 8; i++) {
+           one_symbol_string += c;
+       }
     }
     else {
-        std::vector<bool> used(tree.size(), false);
+        std::vector<int> used(tree.size(), false);
         int16_t last_index = ALPHABET_SIZE;
         for (size_t i = 0; i < nodes_count; i++) {
             unsigned char c;
@@ -97,18 +102,25 @@ void huffman_tree::build_from_file(buffered_reader& src) {
             if (c & 2) {
                 y += ALPHABET_SIZE;
             }
-            if (used[x] || used[y] || x >= last_index || y >= last_index) {
+            used[last_index] = 1;
+            if (x >= last_index || y >= last_index || used[x] == 2 || used[y] == 2) {
                 throw std::runtime_error("wrong huffman tree");
             }
-            used[x] = used[y] = true;
+            used[x] = 2;
+            used[y] = 2;
             tree[last_index++] = node(x, y);
         }
+        for (size_t i = 0; i < used.size() - 1; i++) {
+            if (used[i] == 1) {
+                throw std::runtime_error("wrong huffman tree");
+            }
+        }
+        root = actual_vertex = tree.size() - 1;
+        dp.resize(tree.size());
+        str_dp.resize(tree.size());
+        count_dp(root, -1);
+        actual_vertex = root;
     }
-    root = actual_vertex = tree.size() - 1;
-    dp.resize(tree.size());
-    str_dp.resize(tree.size());
-    count_dp(root, -1);
-    actual_vertex = root;
     return;
 }
 
@@ -118,9 +130,6 @@ void huffman_tree::go_to(bool const& x) {
     }
     else {
         actual_vertex = tree[actual_vertex].r;
-    }
-    if (actual_vertex == -1) {
-        throw std::runtime_error("wrong bit code");
     }
 }
 
@@ -134,12 +143,14 @@ unsigned char huffman_tree::get_if_code() {
     return c;
 }
 
-void huffman_tree::go_to_c(buffered_writer& out, unsigned char c) {
-    if (dp[actual_vertex][c] == -1) {
-        throw std::runtime_error("wrong bit code");
+void huffman_tree::go_to_c(buffered_writer& dst, unsigned char c) {
+    if (tree.size() == 257) {
+        dst.write(one_symbol_string);
     }
-    out.write(str_dp[actual_vertex][c]);
-    actual_vertex = dp[actual_vertex][c];
+    else {
+        dst.write(str_dp[actual_vertex][c]);
+        actual_vertex = dp[actual_vertex][c];
+    }
 }
 
 void huffman_tree::dfs(int16_t v, std::vector<unsigned char> &code_arr, unsigned char code, int16_t len) {
@@ -185,11 +196,6 @@ void huffman_tree::count_dp(int16_t v, int16_t u = -1) {
                 else {
                     actual_vertex = tree[actual_vertex].r;
                 }
-                if (actual_vertex == -1) {
-                    dp[v][i] = -1;
-                    str_dp[v][i].clear();
-                    break;
-                }
                 if (is_code()) {
                     str_dp[v][i] += get_if_code();
                 }
@@ -209,23 +215,19 @@ void huffman_tree::count_dp(int16_t v, int16_t u = -1) {
             bool t = (i & (1 << 7)) > 0;
             actual_vertex = dp[u][i];
             int16_t j = (i << 1) % 256;
-            if (tree[actual_vertex].l != -1) {
-                go_to(0);
-                str_dp[v][j] = str_dp[u][i];
-                if (is_code()) {
-                    str_dp[v][j] += get_if_code();
-                }
-                dp[v][j] = actual_vertex;
+            go_to(0);
+            str_dp[v][j] = str_dp[u][i];
+            if (is_code()) {
+                str_dp[v][j] += get_if_code();
             }
+            dp[v][j] = actual_vertex;
             actual_vertex = dp[u][i];
-            if (tree[actual_vertex].r != -1) {
-                go_to(1);
-                str_dp[v][j + 1] = str_dp[u][i];
-                if (is_code()) {
-                    str_dp[v][j + 1] += get_if_code();
-                }
-                dp[v][j + 1] = actual_vertex;
+            go_to(1);
+            str_dp[v][j + 1] = str_dp[u][i];
+            if (is_code()) {
+                str_dp[v][j + 1] += get_if_code();
             }
+            dp[v][j + 1] = actual_vertex;
         }
     }
     count_dp(tree[v].l, v);

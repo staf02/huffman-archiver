@@ -18,6 +18,7 @@ void encoder::save_to_file(const char* filename) {
     buffered_writer dst(filename);
     src.reset();
     if (!src.has_next()) {
+        dst.write(255);
         return;
     }
     dst.write(tr.count_mod(freq));
@@ -48,11 +49,8 @@ void encoder::print_text(buffered_writer& dst) {
         if (pos + last_len >= 8) {
             dst.write(buf);
             buf = tr.codes[c].back() << (8 - pos);
-            pos = (pos + last_len) % 8;
         }
-        else {
-            pos += last_len;
-        }
+        pos = (pos + last_len) % 8;
     }
     if (pos != 0) {
         dst.write(buf);

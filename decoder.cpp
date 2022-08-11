@@ -8,8 +8,12 @@ void decoder::save_to_file(const char* filename) {
     if (!src.has_next()) {
         return;
     }
-    unsigned char mod;
+    uint8_t mod;
     src.get_next(mod);
+    if (mod == 255) {
+        return;
+    }
+    mod %= 8;
     tr.build_from_file(src);
     decode_data(dst, mod);
 }

@@ -39,6 +39,7 @@ private:
     std::vector<node> tree;
     std::vector<std::vector<int>> dp;
     std::vector<std::vector<std::string>> str_dp;
+    std::string one_symbol_string = "";
 
     void dfs(int16_t v, std::vector<unsigned char> &code_arr, unsigned char c = 0, int16_t len = 0);
     void count_dp(int16_t v, int16_t u);
