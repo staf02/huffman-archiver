@@ -1,0 +1,596 @@
+//
+// Created by staf02 on 16/05/22.
+//
+
+#pragma once
+
+#include <array>
+#include <cstddef>
+#include <new>
+#include <type_traits>
+
+template <typename T, size_t SMALL_SIZE>
+struct socow_vector {
+private:
+    struct dynamic_array;
+
+public:
+    using iterator = T*;
+    using const_iterator = T const*;
+
+    socow_vector();                                     // O(1) nothrow
+    socow_vector(socow_vector const&);                  // O(N) strong
+    socow_vector& operator=(socow_vector const& other); // O(N) strong
+
+    ~socow_vector(); // O(N) nothrow
+
+    T& operator[](size_t i);             // O(1) nothrow
+    T const& operator[](size_t i) const; // O(1) nothrow
+
+    T* data();             // O(1) nothrow
+    T const* data() const; // O(1) nothrow
+    size_t size() const;   // O(1) nothrow
+
+    T& front();             // O(1) nothrow
+    T const& front() const; // O(1) nothrow
+
+    T& back();                // O(1) nothrow
+    T const& back() const;    // O(1) nothrow
+    void push_back(T const&); // O(1)* strong
+    void pop_back();          // O(1) nothrow
+
+    bool empty() const; // O(1) nothrow
+
+    size_t capacity() const; // O(1) nothrow
+    void reserve(size_t);    // O(N) strong
+    void shrink_to_fit();    // O(N) strong
+
+    void clear(); // O(N) nothrow
+
+    void swap(socow_vector&); // O(1) nothrow
+
+    iterator begin(); // O(1) nothrow
+    iterator end();   // O(1) nothrow
+
+    const_iterator begin() const; // O(1) nothrow
+    const_iterator end() const;   // O(1) nothrow
+
+    iterator insert(const_iterator pos, T const&); // O(N) strong
+
+    iterator erase(const_iterator pos); // O(N) nothrow(swap)
+
+    iterator erase(const_iterator first,
+                   const_iterator last); // O(N) nothrow(swap)
+
+    friend bool operator==(socow_vector& a, socow_vector& b);
+    friend bool operator!=(socow_vector& a, socow_vector& b);
+
+private:
+    size_t size_{0};
+    bool is_small{true};
+    union {
+        dynamic_array big;
+        std::array<std::aligned_storage_t<sizeof(T), alignof(T)>, SMALL_SIZE> small_data;
+    };
+
+    static void clear_storage(dynamic_array& buf, size_t buf_size);
+
+    static void destroy(dynamic_array& buf, size_t buf_size);
+
+    void copy_storage();
+    static void swap_stat_dyn(socow_vector& stat_vec, socow_vector& dyn_vec);
+
+    void rebuild(size_t new_cap);
+
+    static void clear_array(T* data_array, size_t len) {
+        for (size_t i = len; i > 0; i--) {
+            data_array[i - 1].~T();
+        }
+    }
+
+    void copy_dynamic_link(dynamic_array& tmp) {
+        new (&big) dynamic_array(tmp);
+        --big.ref_count();
+    }
+
+    static T* get_small_ptr(std::array<std::aligned_storage_t<sizeof(T), alignof(T)>, SMALL_SIZE> &arr) {
+        return reinterpret_cast<T const*>(&arr[0]);
+    }
+
+    void copy_to_dyn(dynamic_array& new_dyn_buf) {
+        for (size_t i = 0; i != size(); i++) {
+            try {
+                new (new_dyn_buf.data() + i)
+                        T(is_small ? get_small_ptr(small_data)[i] : big.data()[i]);
+            } catch (...) {
+                clear_storage(new_dyn_buf, i);
+                throw;
+            }
+        }
+    }
+};
+
+/*template <typename T, size_t SMALL_SIZE>
+struct socow_vector<T, SMALL_SIZE>::small_vector {
+    small_vector();
+    small_vector(small_vector const& other, size_t stor_size);
+    small_vector(dynamic_array const& other, size_t stor_size);
+
+    T* data();
+    T const* data() const;
+
+    void clear(size_t stor_size);
+
+private:
+    std::array<std::aligned_storage_t<sizeof(T), alignof(T)>, SMALL_SIZE> data_;
+};
+
+template <typename T, size_t SMALL_SIZE>
+socow_vector<T, SMALL_SIZE>::small_vector::small_vector() {
+    data_ =
+            std::array<std::aligned_storage_t<sizeof(T), alignof(T)>, SMALL_SIZE>();
+}
+
+template <typename T, size_t SMALL_SIZE>
+socow_vector<T, SMALL_SIZE>::small_vector::small_vector(
+        small_vector const& other, size_t stor_size)
+        : small_vector() {
+    for (size_t i = 0; i != stor_size; i++) {
+        try {
+            new (&data_[i]) T(other.data()[i]);
+        } catch (...) {
+            clear(i);
+            throw;
+        }
+    }
+}
+
+template <typename T, size_t SMALL_SIZE>
+T* socow_vector<T, SMALL_SIZE>::small_vector::data() {
+    return reinterpret_cast<T*>(&data_[0]);
+}
+
+template <typename T, size_t SMALL_SIZE>
+T const* socow_vector<T, SMALL_SIZE>::small_vector::data() const {
+    return reinterpret_cast<T const*>(&data_[0]);
+}
+
+template <typename T, size_t SMALL_SIZE>
+void socow_vector<T, SMALL_SIZE>::small_vector::clear(size_t stor_size) {
+    clear_array(data(), stor_size);
+}
+template <typename T, size_t SMALL_SIZE>
+socow_vector<T, SMALL_SIZE>::small_vector::small_vector(
+        const socow_vector<T, SMALL_SIZE>::dynamic_array& other, size_t stor_size) {
+    for (size_t i = 0; i != stor_size; i++) {
+        try {
+            new (&data_[i]) T(other.data()[i]);
+        } catch (...) {
+            clear(i);
+            throw;
+        }
+    }
+}*/
+
+template <typename T, size_t SMALL_SIZE>
+struct socow_vector<T, SMALL_SIZE>::dynamic_array {
+private:
+    struct dynamic_array_data;
+
+public:
+    explicit dynamic_array(size_t cap);
+    dynamic_array(dynamic_array const& other);
+
+    size_t& ref_count();
+    T* data();
+    T const* data() const;
+    size_t capacity() const;
+
+    void swap(dynamic_array& other);
+    void clear(size_t stor_size);
+
+private:
+    dynamic_array_data* all_data_;
+
+    static constexpr std::align_val_t meta_al =
+            static_cast<std::align_val_t>(alignof(dynamic_array_data));
+
+    friend struct socow_vector;
+};
+
+template <typename T, size_t SMALL_SIZE>
+struct socow_vector<T, SMALL_SIZE>::dynamic_array::dynamic_array_data {
+private:
+    size_t capacity_;
+    size_t ref_count_;
+    T data_[0];
+
+    friend struct socow_vector::dynamic_array;
+};
+
+template <typename T, size_t SMALL_SIZE>
+socow_vector<T, SMALL_SIZE>::dynamic_array::dynamic_array(size_t cap)
+        : all_data_(static_cast<dynamic_array_data*>(operator new(
+        sizeof(dynamic_array_data) + cap * sizeof(T), meta_al))) {
+    all_data_->capacity_ = cap;
+    all_data_->ref_count_ = 1;
+}
+
+template <typename T, size_t SMALL_SIZE>
+socow_vector<T, SMALL_SIZE>::dynamic_array::dynamic_array(
+        dynamic_array const& other)
+        : all_data_(other.all_data_) {
+    ++all_data_->ref_count_;
+}
+
+template <typename T, size_t SMALL_SIZE>
+size_t socow_vector<T, SMALL_SIZE>::dynamic_array::capacity() const {
+    return all_data_->capacity_;
+}
+
+template <typename T, size_t SMALL_SIZE>
+size_t& socow_vector<T, SMALL_SIZE>::dynamic_array::ref_count() {
+    return all_data_->ref_count_;
+}
+
+template <typename T, size_t SMALL_SIZE>
+T* socow_vector<T, SMALL_SIZE>::dynamic_array::data() {
+    return all_data_->data_;
+}
+
+template <typename T, size_t SMALL_SIZE>
+T const* socow_vector<T, SMALL_SIZE>::dynamic_array::data() const {
+    return all_data_->data_;
+}
+
+template <typename T, size_t SMALL_SIZE>
+void socow_vector<T, SMALL_SIZE>::dynamic_array::swap(dynamic_array& other) {
+    std::swap(all_data_, other.all_data_);
+}
+
+template <typename T, size_t SMALL_SIZE>
+void socow_vector<T, SMALL_SIZE>::dynamic_array::clear(size_t stor_size) {
+    clear_array(all_data_->data_, stor_size);
+}
+
+template <typename T, size_t SMALL_SIZE>
+void socow_vector<T, SMALL_SIZE>::copy_storage() {
+    if (!is_small && big.ref_count() != 1) {
+        if (size() > SMALL_SIZE) {
+            rebuild(capacity());
+        } else {
+            rebuild(SMALL_SIZE);
+        }
+    }
+}
+
+template <typename T, size_t SMALL_SIZE>
+void socow_vector<T, SMALL_SIZE>::swap_stat_dyn(socow_vector& stat_vec,
+                                                socow_vector& dyn_vec) {
+    dynamic_array tmp = dyn_vec.big;
+    destroy(dyn_vec.big, dyn_vec.size());
+    try {
+        new (&dyn_vec.small) small_vector(stat_vec.small, stat_vec.size());
+    } catch (...) {
+        dyn_vec.copy_dynamic_link(tmp);
+        throw;
+    }
+    destroy(stat_vec.small, stat_vec.size());
+    stat_vec.copy_dynamic_link(tmp);
+}
+
+template <typename T, size_t SMALL_SIZE>
+void socow_vector<T, SMALL_SIZE>::rebuild(size_t new_cap) {
+    if (new_cap <= SMALL_SIZE && !is_small) {
+        std::array<std::aligned_storage_t<sizeof(T), alignof(T)>, SMALL_SIZE> new_stat_buf;
+        for (size_t i = 0; i != size(); i++) {
+            try {
+                new (get_small_ptr(new_stat_buf) + i) T(big.data()[i]);
+            } catch (...) {
+                new_stat_buf.clear(i);
+                throw;
+            }
+        }
+        destroy(big, size());
+        new (&small) small_vector(new_stat_buf, size());
+        is_small = true;
+        new_stat_buf.clear(size());
+    } else if (new_cap > SMALL_SIZE) {
+        dynamic_array new_dyn_buf(new_cap);
+        copy_to_dyn(new_dyn_buf);
+        if (is_small) {
+            destroy(small, size());
+            is_small = false;
+        } else {
+            destroy(big, size());
+        }
+        copy_dynamic_link(new_dyn_buf);
+    }
+}
+
+template <typename T, size_t SMALL_SIZE>
+void socow_vector<T, SMALL_SIZE>::clear_storage(
+        socow_vector::dynamic_array& buf, size_t buf_size) {
+    if (buf.ref_count() == 1) {
+        buf.clear(buf_size);
+        operator delete(buf.all_data_, dynamic_array::meta_al);
+    } else {
+        --buf.ref_count();
+    }
+}
+
+template <typename T, size_t SMALL_SIZE>
+void socow_vector<T, SMALL_SIZE>::destroy(socow_vector::small_vector& buf,
+                                          size_t buf_size) {
+    buf.clear(buf_size);
+    //buf.~small_vector();
+}
+
+template <typename T, size_t SMALL_SIZE>
+void socow_vector<T, SMALL_SIZE>::destroy(socow_vector::dynamic_array& buf,
+                                          size_t buf_size) {
+    clear_storage(buf, buf_size);
+    buf.~dynamic_array();
+}
+
+// Constructors
+
+template <typename T, size_t SMALL_SIZE>
+socow_vector<T, SMALL_SIZE>::socow_vector() : small() {}
+
+template <typename T, size_t SMALL_SIZE>
+socow_vector<T, SMALL_SIZE>::socow_vector(socow_vector const& other)
+        : size_(other.size_), is_small(other.is_small) {
+    if (other.is_small) {
+        new (&small) small_vector(other.small, other.size());
+    } else {
+        new (&big) dynamic_array(other.big);
+    }
+}
+
+template <typename T, size_t SMALL_SIZE>
+socow_vector<T, SMALL_SIZE>&
+socow_vector<T, SMALL_SIZE>::operator=(socow_vector const& other) {
+    if (*this == other) {
+        return *this;
+    }
+    socow_vector(other).swap(*this);
+    return *this;
+}
+
+template <typename T, size_t SMALL_SIZE>
+socow_vector<T, SMALL_SIZE>::~socow_vector() {
+    if (is_small) {
+        destroy(small, size());
+    } else {
+        destroy(big, size());
+    }
+}
+
+//[]
+
+template <typename T, size_t SMALL_SIZE>
+T& socow_vector<T, SMALL_SIZE>::operator[](size_t i) {
+    return data()[i];
+}
+
+template <typename T, size_t SMALL_SIZE>
+T const& socow_vector<T, SMALL_SIZE>::operator[](size_t i) const {
+    return data()[i];
+}
+
+// get data
+
+template <typename T, size_t SMALL_SIZE>
+T* socow_vector<T, SMALL_SIZE>::data() {
+    copy_storage();
+    return is_small ? small.data() : big.data();
+}
+
+template <typename T, size_t SMALL_SIZE>
+T const* socow_vector<T, SMALL_SIZE>::data() const {
+    return is_small ? small.data() : big.data();
+}
+
+template <typename T, size_t SMALL_SIZE>
+size_t socow_vector<T, SMALL_SIZE>::size() const {
+    return size_;
+}
+
+template <typename T, size_t SMALL_SIZE>
+T& socow_vector<T, SMALL_SIZE>::front() {
+    return data()[0];
+}
+
+template <typename T, size_t SMALL_SIZE>
+T const& socow_vector<T, SMALL_SIZE>::front() const {
+    return data()[0];
+}
+
+template <typename T, size_t SMALL_SIZE>
+T& socow_vector<T, SMALL_SIZE>::back() {
+    return data()[size_ - 1];
+}
+
+template <typename T, size_t SMALL_SIZE>
+T const& socow_vector<T, SMALL_SIZE>::back() const {
+    return data()[size_ - 1];
+}
+
+// push_back & pop_back
+
+template <typename T, size_t SMALL_SIZE>
+void socow_vector<T, SMALL_SIZE>::push_back(T const& value) {
+    size_t cur_size = size(), cur_cap = capacity();
+    if (cur_size == cur_cap) {
+        size_t new_cap = cur_cap * 2;
+        dynamic_array new_dyn_buf(new_cap);
+        copy_to_dyn(new_dyn_buf);
+        try {
+            new (new_dyn_buf.data() + size_) T(value);
+        } catch (...) {
+            new_dyn_buf.clear(size_);
+            throw;
+        }
+        if (is_small) {
+            destroy(small, size());
+            is_small = false;
+        } else {
+            destroy(big, size());
+        }
+        copy_dynamic_link(new_dyn_buf);
+    } else {
+        T* current = data();
+        new (current + size_) T(value);
+    }
+    size_++;
+}
+
+template <typename T, size_t SMALL_SIZE>
+void socow_vector<T, SMALL_SIZE>::pop_back() {
+    data()[size() - 1].~T();
+    size_--;
+}
+
+// empty
+
+template <typename T, size_t SMALL_SIZE>
+bool socow_vector<T, SMALL_SIZE>::empty() const {
+    return size_ == 0;
+}
+
+template <typename T, size_t SMALL_SIZE>
+size_t socow_vector<T, SMALL_SIZE>::capacity() const {
+    return is_small ? SMALL_SIZE : big.capacity();
+}
+
+// resize
+template <typename T, size_t SMALL_SIZE>
+void socow_vector<T, SMALL_SIZE>::reserve(size_t new_cap) {
+    if (capacity() < new_cap) {
+        rebuild(new_cap);
+    } else {
+        copy_storage();
+    }
+}
+
+template <typename T, size_t SMALL_SIZE>
+void socow_vector<T, SMALL_SIZE>::shrink_to_fit() {
+    if (size() != capacity()) {
+        rebuild(size());
+    }
+}
+
+template <typename T, size_t SMALL_SIZE>
+void socow_vector<T, SMALL_SIZE>::clear() {
+    copy_storage();
+    is_small ? small.clear(size()) : big.clear(size());
+    size_ = 0;
+}
+
+template <typename T, size_t SMALL_SIZE>
+void socow_vector<T, SMALL_SIZE>::swap(socow_vector& other) {
+    if (is_small && other.is_small) {
+        size_t cur_size = size(), other_size = other.size();
+        small_vector tmp(small, cur_size);
+        destroy(small, cur_size);
+        new (&small) small_vector(other.small, other_size);
+        destroy(other.small, other_size);
+        new (&other.small) small_vector(tmp, cur_size);
+        tmp.clear(cur_size);
+    } else if (is_small && !other.is_small) {
+        swap_stat_dyn(*this, other);
+    } else if (other.is_small) {
+        swap_stat_dyn(other, *this);
+    } else {
+        big.swap(other.big);
+    }
+    std::swap(size_, other.size_);
+    std::swap(is_small, other.is_small);
+}
+
+// iterators
+
+template <typename T, size_t SMALL_SIZE>
+typename socow_vector<T, SMALL_SIZE>::iterator
+socow_vector<T, SMALL_SIZE>::begin() {
+    return data();
+}
+
+template <typename T, size_t SMALL_SIZE>
+typename socow_vector<T, SMALL_SIZE>::iterator
+socow_vector<T, SMALL_SIZE>::end() {
+    return data() + size_;
+}
+
+template <typename T, size_t SMALL_SIZE>
+typename socow_vector<T, SMALL_SIZE>::const_iterator
+socow_vector<T, SMALL_SIZE>::begin() const {
+    return data();
+}
+
+template <typename T, size_t SMALL_SIZE>
+typename socow_vector<T, SMALL_SIZE>::const_iterator
+socow_vector<T, SMALL_SIZE>::end() const {
+    return data() + size_;
+}
+
+// insert & erase
+template <typename T, size_t SMALL_SIZE>
+typename socow_vector<T, SMALL_SIZE>::iterator
+socow_vector<T, SMALL_SIZE>::insert(const_iterator pos, T const& value) {
+    size_t p = pos - (is_small ? small.data() : big.data());
+    push_back(value);
+    T* current = data();
+    for (size_t i = size_ - 1; i > p; i--) {
+        std::swap(current[i - 1], current[i]);
+    }
+    return is_small ? small.data() : big.data() + p;
+}
+
+template <typename T, size_t SMALL_SIZE>
+typename socow_vector<T, SMALL_SIZE>::iterator
+socow_vector<T, SMALL_SIZE>::erase(const_iterator pos) {
+    return pos == ((is_small ? small.data() : big.data()) + size_)
+           ? end()
+           : erase(pos, pos + 1);
+}
+
+template <typename T, size_t SMALL_SIZE>
+typename socow_vector<T, SMALL_SIZE>::iterator
+socow_vector<T, SMALL_SIZE>::erase(const_iterator first, const_iterator last) {
+    size_t first_index = first - (is_small ? small.data() : big.data());
+    size_t cnt = last - first;
+    if (cnt == 0) {
+        return begin() + first_index;
+    } else {
+        T* current = data();
+        for (size_t i = first_index; i != size() - cnt; i++) {
+            std::swap(current[i], current[i + cnt]);
+        }
+        for (size_t i = 0; i != cnt; i++) {
+            pop_back();
+        }
+        return is_small ? small.data() : big.data() + first_index;
+    }
+}
+
+template <typename T, size_t SMALL_SIZE>
+bool operator==(socow_vector<T, SMALL_SIZE> const& a,
+                socow_vector<T, SMALL_SIZE> const& b) {
+    if (a.size() != b.size()) {
+        return false;
+    }
+    for (size_t i = 0; i < a.size(); i++) {
+        if (a[i] != b[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+template <typename T, size_t SMALL_SIZE>
+bool operator!=(socow_vector<T, SMALL_SIZE> const& a,
+                socow_vector<T, SMALL_SIZE> const& b) {
+    return a != b;
+}
