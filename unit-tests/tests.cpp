@@ -124,11 +124,6 @@ TEST(correctness, exe) {
   }
 }
 
-TEST(correctness, pdf) {
-  std::string filename = "mytests/pdf/1.pdf";
-  compress_decompress(filename);
-}
-
 TEST(correctness, random_file) {
   gen_random_file();
   compress_decompress("mytests/random.txt");

@@ -17,6 +17,8 @@ set(huflib
         huflib/decoder.cpp
         huflib/encoder.cpp
         huflib/huffman_tree.cpp
+        huflib/huffman_exception.cpp
+        huflib/IO_exception.cpp
         )
 
 add_executable(tests
@@ -26,7 +28,7 @@ add_executable(tests
 add_executable(huffman-tool
         ${huflib}
         huffman-tool.cpp
-        )
+        huflib/IO_exception.h huflib/huffman_exception.cpp huflib/huffman_exception.h huflib/IO_exception.cpp)
 # don't forget to use same flags at your library 
 if (NOT MSVC)
   target_compile_options(tests PRIVATE -Wall -Wno-sign-compare -pedantic)

@@ -1,7 +1,9 @@
 #include "buffered_reader.h"
+#include "IO_exception.h"
 #include <algorithm>
 #include <bitset>
 #include <iostream>
+#include <cstring>
 
 buffered_reader::buffered_reader(std::istream& src) : buffer(new unsigned char[BUFF_LEN]), src(src) {}
 
@@ -19,7 +21,7 @@ void buffered_reader::check_buffer() {
     if (pos != end_pos) {
         return;
     }
-    src.read((char*) buffer, BUFF_LEN);
+    src.read(reinterpret_cast<char*>(buffer), BUFF_LEN);
     end_pos = std::min(BUFF_LEN, static_cast<size_t>(src.gcount()));
     pos = 0;
 }

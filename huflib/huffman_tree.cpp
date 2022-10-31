@@ -1,4 +1,5 @@
 #include "huffman_tree.h"
+#include "huffman_exception.h"
 #include <queue>
 #include <iostream>
 #include <algorithm>
@@ -72,7 +73,7 @@ unsigned char huffman_tree::count_mod(std::array<uint64_t, 256> const& arr) {
 void huffman_tree::build_from_file(buffered_reader& src) {
     unsigned char nodes_count;
     if (!src.get_next(nodes_count)) {
-        throw std::runtime_error("empty huffman tree");
+        throw huffman_exception("empty huffman tree");
     }
     tree.resize(ALPHABET_SIZE + nodes_count);
     if (nodes_count == 0) {
@@ -91,7 +92,7 @@ void huffman_tree::build_from_file(buffered_reader& src) {
             unsigned char c;
             unsigned char u, v;
             if (!src.get_next(c) || !src.get_next(u) || !src.get_next(v)) {
-                throw std::runtime_error("incomplete huffman tree");
+                throw huffman_exception("incomplete huffman tree");
             }
             int16_t x = u, y = v;
             if (c & 1) {
@@ -102,7 +103,7 @@ void huffman_tree::build_from_file(buffered_reader& src) {
             }
             used[last_index] = 1;
             if (x >= last_index || y >= last_index || used[x] == 2 || used[y] == 2) {
-                throw std::runtime_error("wrong huffman tree");
+                throw huffman_exception("wrong huffman tree");
             }
             used[x] = 2;
             used[y] = 2;
@@ -110,7 +111,7 @@ void huffman_tree::build_from_file(buffered_reader& src) {
         }
         for (size_t i = 0; i < used.size() - 1; i++) {
             if (used[i] == 1) {
-                throw std::runtime_error("wrong huffman tree");
+                throw huffman_exception("wrong huffman tree");
             }
         }
         root = actual_vertex = tree.size() - 1;

@@ -6,7 +6,7 @@
 class buffered_writer {
 public:
     buffered_writer() = delete;
-    buffered_writer(std::ostream&);
+    explicit buffered_writer(std::ostream&);
     buffered_writer(buffered_writer& other) = delete;
     buffered_writer& operator=(buffered_writer& other) = delete;
     ~buffered_writer();
@@ -15,8 +15,6 @@ public:
     void write(std::string const& str);
 
 private:
-    //pos is real length of buffer
-    //when pos == 0, buffer is empty
     size_t const BUFF_LEN = 1 << 10;
     size_t pos = 0;
     unsigned char* buffer;
