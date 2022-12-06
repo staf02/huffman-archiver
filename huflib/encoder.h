@@ -20,5 +20,5 @@ private:
     huffman_tree tr;
 
     void count_freq();
-    void print_text(buffered_writer &);
+    void print_text(buffered_writer&);
 };

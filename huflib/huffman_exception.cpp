@@ -4,4 +4,4 @@
 
 #include "huffman_exception.h"
 
-huffman_exception::huffman_exception(const char *message) : runtime_error(message) {}
+huffman_exception::huffman_exception(const char* message) : runtime_error(message) {}

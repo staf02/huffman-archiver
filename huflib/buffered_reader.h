@@ -6,10 +6,10 @@ class buffered_reader {
 public:
     buffered_reader() = delete;
     buffered_reader(std::istream&);
-    buffered_reader(buffered_reader &other) = delete;
+    buffered_reader(buffered_reader& other) = delete;
     buffered_reader& operator=(buffered_reader& r) = delete;
     ~buffered_reader();
-    
+
     void reset();
 
     bool has_next();

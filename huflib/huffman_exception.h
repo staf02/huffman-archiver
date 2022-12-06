@@ -9,6 +9,6 @@
 
 #endif //HUFFMAN_HUFFMAN_EXCEPTION_H
 
-struct huffman_exception  : public std::runtime_error {
+struct huffman_exception : public std::runtime_error {
     huffman_exception(const char* message);
 };

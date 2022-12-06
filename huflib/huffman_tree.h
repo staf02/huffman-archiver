@@ -23,7 +23,7 @@ public:
     void go_to(bool const& x);
     bool is_code();
     unsigned char get_if_code();
-    void go_to_c(buffered_writer &out, unsigned char c);
+    void go_to_c(buffered_writer& out, unsigned char c);
 
 
 private:
@@ -42,6 +42,6 @@ private:
     std::vector<std::vector<std::string>> str_dp;
     std::string one_symbol_string = "";
 
-    void dfs(int16_t v, std::vector<unsigned char> &code_arr, unsigned char c = 0, int16_t len = 0);
+    void dfs(int16_t v, std::vector<unsigned char>& code_arr, unsigned char c = 0, int16_t len = 0);
     void count_dp(int16_t v, int16_t u);
 };

@@ -31,7 +31,7 @@ bool buffered_reader::has_next() {
     return end_pos != 0;
 }
 
-bool buffered_reader::get_next(unsigned char& c){
+bool buffered_reader::get_next(unsigned char& c) {
     if (has_next()) {
         c = buffer[pos++];
         return true;

@@ -11,7 +11,7 @@ encoder::encoder(std::istream& file_src) : src(file_src), freq(), tr() {
     tr.gen_codes();
 }
 
-void encoder::save_to_file(std::ostream &file_dst) {
+void encoder::save_to_file(std::ostream& file_dst) {
     buffered_writer dst(file_dst);
     src.reset();
     if (!src.has_next()) {

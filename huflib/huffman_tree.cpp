@@ -12,15 +12,15 @@ huffman_tree::huffman_tree() : actual_vertex(-1), root(-1), tree() {
 }
 
 void huffman_tree::build_by_freq(std::array<uint64_t, 256> const& arr) {
-    std::priority_queue<std::pair<uint64_t, int16_t>, 
-        std::vector<std::pair<uint64_t, int16_t>>, 
+    std::priority_queue<std::pair<uint64_t, int16_t>,
+        std::vector<std::pair<uint64_t, int16_t>>,
         std::greater<std::pair<uint64_t, int16_t>>> q;
     int16_t cnt = 0, last_index = ALPHABET_SIZE;
     for (size_t i = 0; i < ALPHABET_SIZE; ++i) {
         if (arr[i] != 0) {
             q.emplace(arr[i], i);
             cnt++;
-            
+
         }
     }
     tree.resize(ALPHABET_SIZE + cnt - 1);
@@ -41,7 +41,7 @@ void huffman_tree::build_by_freq(std::array<uint64_t, 256> const& arr) {
 void huffman_tree::print_to_file(buffered_writer& dst) {
     if (tree.back().r == -1) {
         dst.write(bool(0));
-        dst.write((unsigned char) tree.back().l);
+        dst.write((unsigned char)tree.back().l);
         return;
     }
     unsigned char nodes_count = tree.size() - ALPHABET_SIZE;
@@ -77,13 +77,13 @@ void huffman_tree::build_from_file(buffered_reader& src) {
     }
     tree.resize(ALPHABET_SIZE + nodes_count);
     if (nodes_count == 0) {
-       unsigned char c;
-       src.get_next(c);
-       tree.push_back(node(c, -1));
-       root = actual_vertex = tree.size() - 1;
-       for (size_t i = 0; i < BUFF_SIZE; i++) {
-           one_symbol_string += c;
-       }
+        unsigned char c;
+        src.get_next(c);
+        tree.push_back(node(c, -1));
+        root = actual_vertex = tree.size() - 1;
+        for (size_t i = 0; i < BUFF_SIZE; i++) {
+            one_symbol_string += c;
+        }
     }
     else {
         std::vector<int> used(tree.size(), false);
@@ -152,7 +152,7 @@ void huffman_tree::go_to_c(buffered_writer& dst, unsigned char c) {
     }
 }
 
-void huffman_tree::dfs(int16_t v, std::vector<unsigned char> &code_arr, unsigned char code, int16_t len) {
+void huffman_tree::dfs(int16_t v, std::vector<unsigned char>& code_arr, unsigned char code, int16_t len) {
     if (v == -1) {
         return;
     }
@@ -172,7 +172,7 @@ void huffman_tree::dfs(int16_t v, std::vector<unsigned char> &code_arr, unsigned
     }
     dfs(tree[v].l, code_arr, code, len + 1);
     code += 1 << (BUFF_SIZE - 1 - (len % BUFF_SIZE));
-    dfs(tree[v].r, code_arr, code, len + 1); 
+    dfs(tree[v].r, code_arr, code, len + 1);
     if (len % BUFF_SIZE == 0 && len != 0) {
         code_arr.pop_back();
     }

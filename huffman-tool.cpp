@@ -7,6 +7,8 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <iostream>
+#include <iostream>
 
 void help() {
     std::cout << "Compresses or decompresses files using the Huffman algorithm\n\n";
@@ -17,7 +19,7 @@ void help() {
     std::cout << "--help\t\tdisplay this help and exit\n";
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
     if (argc == 1) {
         std::cerr << "Expected cmd arguments\n";
         std::cerr << "Try 'huffman-tool --help' for more information.\n";
@@ -29,8 +31,8 @@ int main(int argc, char *argv[]) {
             std::cerr << "Try 'huffman-tool --help' for more information.\n";
             return 1;
         }
-        char *input_file;
-        char *output_file;
+        char* input_file;
+        char* output_file;
         bool found_input = false, found_output = false;
         for (size_t i = 2; i < argc; i++) {
             if (strcmp(argv[i], "--input") == 0) {
@@ -43,12 +45,14 @@ int main(int argc, char *argv[]) {
                     input_file = argv[i + 1];
                     i++;
                     found_input = true;
-                } else {
+                }
+                else {
                     std::cerr << "Input file not specified\n";
                     std::cerr << "Try 'huffman-tool --help' for more information.\n";
                     return 1;
                 }
-            } else if (strcmp(argv[i], "--output") == 0) {
+            }
+            else if (strcmp(argv[i], "--output") == 0) {
                 if (found_output) {
                     std::cerr << "Output file has already been specified\n";
                     std::cerr << "Try 'huffman-tool --help' for more information.\n";
@@ -59,12 +63,14 @@ int main(int argc, char *argv[]) {
                     output_file = argv[i + 1];
                     i++;
                     found_output = true;
-                } else {
+                }
+                else {
                     std::cerr << "Output file not specified\n";
                     std::cerr << "Try 'huffman-tool --help' for more information.\n";
                     return 1;
                 }
-            } else {
+            }
+            else {
                 std::cerr << "Incorrect cmd arg\n";
                 std::cerr << "Try 'huffman-tool --help' for more information.\n";
                 return 1;
@@ -76,32 +82,34 @@ int main(int argc, char *argv[]) {
             dst.exceptions(std::ofstream::failbit | std::ofstream::badbit);
             if (!src.is_open()) {
                 throw IO_exception("cannot open input file " +
-                                   std::string(input_file));
+                    std::string(input_file));
             }
             if (!dst.is_open()) {
                 throw IO_exception("cannot open output file " +
-                                   std::string(output_file));
+                    std::string(output_file));
             }
             switch (argv[1][2]) {
-                case 'c':
-                    encode(src, dst);
-                    std::cout << input_file << " successfully compressed in " << output_file << "\n";
-                    std::cout << clock() / 1000.0 << "\n";
-                    break;
-                case 'd':
-                    decode(src, dst);
-                    std::cout << input_file << " successfully decompressed in " << output_file << "\n";
-                    std::cout << clock() / 1000.0 << "\n";
-                    break;
+            case 'c':
+                encode(src, dst);
+                std::cout << input_file << " successfully compressed in " << output_file << "\n";
+                std::cout << clock() / 1000.0 << "\n";
+                break;
+            case 'd':
+                decode(src, dst);
+                std::cout << input_file << " successfully decompressed in " << output_file << "\n";
+                std::cout << clock() / 1000.0 << "\n";
+                break;
             }
         }
-        catch (const std::runtime_error &e) {
+        catch (const std::runtime_error& e) {
             std::cerr << e.what() << "\n";
             return 1;
         }
-    } else if (strcmp(argv[1], "--help") == 0) {
+    }
+    else if (strcmp(argv[1], "--help") == 0) {
         help();
-    } else {
+    }
+    else {
         std::cerr << "Incorrect cmd argument\n";
         std::cerr << "Try 'huffman-tool --help' for more information.\n";
     }

@@ -18,5 +18,5 @@ private:
     buffered_reader src;
     huffman_tree tr;
 
-    void decode_data(buffered_writer &out, uint8_t mod);
+    void decode_data(buffered_writer& out, uint8_t mod);
 };

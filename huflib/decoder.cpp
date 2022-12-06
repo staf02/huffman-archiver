@@ -27,11 +27,11 @@ void decoder::decode_data(buffered_writer& dst, uint8_t mod) {
         }
         if (end_pos != 0) {
             for (int i = 7; i >= end_pos; i--) {
-              bool t = (c & (1 << i)) > 0;
-              tr.go_to(t);
-              if (tr.is_code()) {
-                dst.write(tr.get_if_code());
-              }
+                bool t = (c & (1 << i)) > 0;
+                tr.go_to(t);
+                if (tr.is_code()) {
+                    dst.write(tr.get_if_code());
+                }
             }
         }
         else {

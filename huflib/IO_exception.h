@@ -9,7 +9,7 @@
 
 #endif //HUFFMAN_IO_EXCEPTION_H
 
-struct IO_exception  : public std::runtime_error {
+struct IO_exception : public std::runtime_error {
     explicit IO_exception(const char* message);
     explicit IO_exception(std::string const& message);
 };
